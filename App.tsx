@@ -43,7 +43,7 @@ const PAGES_DATA: PageEntry[] = [
     "subtitle": "Nick Út • 1972",
     "description": "Napalm-Angriff 1972",
     "path": "bildanalyse/napalm",
-    "imageUrl": "napalm-1972.jpg",
+    "imageUrl": "napalm1972.jpg",
     "year": 1972,
     "tags": ["MODERNE", "VIETNAM", "KRIEG"],
     "focusTag": "KRIEG & MEDIEN",
@@ -84,7 +84,7 @@ const CheckpointOverlay: React.FC<{
   };
 
   return (
-    <div className="fixed inset-0 z-[120] bg-slate-950/90 backdrop-blur-xl flex items-center justify-center p-4 animate-in fade-in duration-300">
+    <div className="fixed inset-0 z-[200] bg-slate-950/90 backdrop-blur-xl flex items-center justify-center p-4 animate-in fade-in duration-300">
       <div className={`max-w-xl w-full bg-white rounded-[2.5rem] p-8 md:p-12 shadow-2xl transition-all ${status === 'wrong' ? 'animate-shake border-4 border-red-500' : 'border-4 border-transparent'}`}>
         <div className="text-center space-y-4 mb-10">
           <span className={`bg-emerald-100 text-emerald-600 px-5 py-2 rounded-full font-black text-[10px] uppercase tracking-widest`}>Wissens-Check</span>
@@ -165,7 +165,7 @@ const InteractiveText: React.FC<{ text: string, className?: string }> = ({ text,
           return <span key={i}>{p}</span>;
         })}
       </p>
-      {expl && <div className="absolute top-full mt-2 bg-white p-4 rounded-2xl shadow-2xl border border-slate-100 text-slate-800 text-sm z-[60] w-64 animate-in fade-in zoom-in-95"><b>{expl.w}:</b> {expl.t}</div>}
+      {expl && <div className="absolute top-full mt-2 bg-white p-4 rounded-2xl shadow-2xl border border-slate-100 text-slate-800 text-sm z-[250] w-64 animate-in fade-in zoom-in-95"><b>{expl.w}:</b> {expl.t}</div>}
     </div>
   );
 };
@@ -182,7 +182,7 @@ const ZoomModal: React.FC<{ imageUrl: string, onClose: () => void }> = ({ imageU
 
   return (
     <div className="fixed inset-0 z-[100] bg-slate-950/95 flex flex-col items-center justify-center p-4 backdrop-blur-md animate-in fade-in duration-300">
-      <div className="absolute top-6 right-6 flex gap-4 z-[110]">
+      <div className="absolute top-6 left-6 flex gap-4 z-[110]">
         <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-2 flex gap-2">
           <button onClick={() => handleZoom(0.5)} className="w-12 h-12 flex items-center justify-center text-white hover:bg-white/10 rounded-xl font-bold text-xl">+</button>
           <button onClick={() => handleZoom(-0.5)} className="w-12 h-12 flex items-center justify-center text-white hover:bg-white/10 rounded-xl font-bold text-xl">−</button>
@@ -285,6 +285,24 @@ const BildanalyseApp: React.FC<{ onBack: () => void, page: PageEntry }> = ({ onB
       <div className="flex flex-1 overflow-hidden relative">
         <main className="no-print flex-1 overflow-y-auto p-4 md:p-10 transition-all duration-500">
           <div className="max-w-3xl mx-auto space-y-6 md:space-y-10">
+            {/* Das Bild ist nun immer oben sichtbar */}
+            <div className="flex justify-center"><div className="bg-slate-200/50 p-1.5 rounded-2xl flex gap-1">{['level_easy', 'level_medium', 'level_hard'].map((l) => (<button key={l} onClick={() => setLevel(l as any)} className={`px-3 md:px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${level === l ? 'bg-white shadow-md text-emerald-600' : 'text-slate-500 hover:text-slate-700'}`}>{l === 'level_easy' ? 'Easy' : l === 'level_medium' ? 'Normal' : 'Pro'}</button>))}</div></div>
+            
+            <div onClick={() => setIsZoomOpen(true)} className="bg-slate-900 rounded-[2rem] p-6 md:p-12 text-center relative overflow-hidden min-h-[280px] md:min-h-[320px] flex flex-col justify-center border-b-8 border-slate-950 shadow-2xl cursor-zoom-in group">
+              <img 
+                src={assetUrl(page.imageUrl)} 
+                className="absolute inset-0 w-full h-full object-cover opacity-30 blur-2xl group-hover:opacity-40" 
+                alt={page.title} 
+                onError={() => console.warn("Bild lädt nicht (BG-Blur):", assetUrl(page.imageUrl))}
+              />
+              <div className="relative z-10 space-y-4">
+                <span className="bg-emerald-600 text-[10px] font-black tracking-widest uppercase px-5 py-2 rounded-full text-white">SCHRITT {step + 1} VON {steps.length}</span>
+                <h2 className="text-2xl md:text-5xl font-black text-white uppercase tracking-tighter leading-none">{curr.title}</h2>
+                <p className="text-emerald-400 font-black uppercase text-xs md:text-lg italic tracking-widest opacity-80">{curr.subtitle}</p>
+                <div className="mt-8 flex justify-center"><div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center border border-white/20 group-hover:scale-110 transition-all text-2xl">🔍</div></div>
+              </div>
+            </div>
+
             {sensitivity && !isRevealed ? (
               <div className="bg-white rounded-[2rem] p-6 md:p-16 border-2 border-slate-100 text-center space-y-8 shadow-2xl mt-4 animate-in zoom-in-95">
                 <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto text-3xl">⚠️</div>
@@ -294,21 +312,6 @@ const BildanalyseApp: React.FC<{ onBack: () => void, page: PageEntry }> = ({ onB
               </div>
             ) : (
               <>
-                <div className="flex justify-center"><div className="bg-slate-200/50 p-1.5 rounded-2xl flex gap-1">{['level_easy', 'level_medium', 'level_hard'].map((l) => (<button key={l} onClick={() => setLevel(l as any)} className={`px-3 md:px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${level === l ? 'bg-white shadow-md text-emerald-600' : 'text-slate-500 hover:text-slate-700'}`}>{l === 'level_easy' ? 'Easy' : l === 'level_medium' ? 'Normal' : 'Pro'}</button>))}</div></div>
-                <div onClick={() => setIsZoomOpen(true)} className="bg-slate-900 rounded-[2rem] p-6 md:p-12 text-center relative overflow-hidden min-h-[280px] md:min-h-[320px] flex flex-col justify-center border-b-8 border-slate-950 shadow-2xl cursor-zoom-in group">
-                  <img 
-                    src={assetUrl(page.imageUrl)} 
-                    className="absolute inset-0 w-full h-full object-cover opacity-30 blur-2xl group-hover:opacity-40" 
-                    alt={page.title} 
-                    onError={() => console.warn("Bild lädt nicht (BG-Blur):", assetUrl(page.imageUrl))}
-                  />
-                  <div className="relative z-10 space-y-4">
-                    <span className="bg-emerald-600 text-[10px] font-black tracking-widest uppercase px-5 py-2 rounded-full text-white">SCHRITT {step + 1} VON {steps.length}</span>
-                    <h2 className="text-2xl md:text-5xl font-black text-white uppercase tracking-tighter leading-none">{curr.title}</h2>
-                    <p className="text-emerald-400 font-black uppercase text-xs md:text-lg italic tracking-widest opacity-80">{curr.subtitle}</p>
-                    <div className="mt-8 flex justify-center"><div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center border border-white/20 group-hover:scale-110 transition-all text-2xl">🔍</div></div>
-                  </div>
-                </div>
                 <p className="text-lg md:text-2xl font-black text-slate-800 text-center leading-snug px-4">{activeContent.description}</p>
                 {activeContent.contextText && (<div className="p-6 md:p-8 bg-sky-900 text-sky-100 rounded-[2rem] shadow-xl border-l-8 border-emerald-500 italic"><InteractiveText text={activeContent.contextText} className="text-base md:text-lg italic leading-relaxed" /></div>)}
                 <div className="grid gap-4">{activeContent.points.map((p, i) => (<div key={i} className="flex gap-4 md:gap-5 items-start bg-white p-5 md:p-8 rounded-[1.5rem] border border-slate-100 hover:border-emerald-200 transition-all shadow-sm group"><span className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-slate-50 border-2 border-slate-100 flex items-center justify-center font-black text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-all">{i + 1}</span><InteractiveText text={p} className="text-base md:text-xl font-bold text-slate-700 leading-tight pt-1 md:pt-2" /></div>))}</div>
@@ -345,7 +348,8 @@ const BildanalyseApp: React.FC<{ onBack: () => void, page: PageEntry }> = ({ onB
         </main>
 
         <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className={`no-print fixed bottom-6 right-6 md:static z-50 bg-slate-900 text-white w-14 h-14 md:w-10 md:h-auto md:py-8 md:px-1 rounded-full md:rounded-l-2xl shadow-2xl transition-all duration-300 hover:bg-emerald-600 flex flex-col items-center justify-center gap-4 ${isSidebarOpen ? 'md:translate-x-full opacity-0' : ''}`}><span className="text-xl">📝</span><span className="hidden md:block [writing-mode:vertical-lr] font-black uppercase text-[10px] tracking-widest rotate-180">Notizen</span></button>
-        <aside className={`fixed inset-0 md:static bg-white/95 backdrop-blur-xl md:bg-white border-l shadow-2xl transition-all duration-500 z-[100] flex flex-col h-full ${isSidebarOpen ? 'w-full md:w-[450px]' : 'w-0 translate-x-full opacity-0 pointer-events-none'}`}>
+        {/* Z-Index der Sidebar auf 150 erhöht, damit sie über dem ZoomModal (100) liegt */}
+        <aside className={`fixed inset-0 md:static bg-white md:bg-white border-l shadow-2xl transition-all duration-500 z-[150] flex flex-col h-full ${isSidebarOpen ? 'w-full md:w-[450px]' : 'w-0 translate-x-full opacity-0 pointer-events-none'}`}>
           <div className="p-4 md:p-6 border-b flex justify-between items-center bg-slate-50/50"><h3 className="font-black uppercase text-[10px] tracking-widest text-slate-900 flex items-center gap-3"><span className="bg-slate-900 text-white p-2 rounded-lg text-sm">📝</span> Notizen • Schritt {step+1}</h3><button onClick={() => setIsSidebarOpen(false)} className="text-slate-400 hover:text-slate-900 p-2 text-2xl">✕</button></div>
           <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-8"><div className="bg-yellow-50 rounded-[1.5rem] p-5 md:p-6 border-2 border-yellow-100 shadow-inner flex flex-col min-h-[300px]"><textarea value={userNotes[step] || ""} onChange={(e) => updateNote(e.target.value)} placeholder={`Erkenntnisse hier festhalten...`} className="w-full flex-grow bg-transparent border-none focus:ring-0 text-slate-800 font-bold text-base md:text-lg resize-none placeholder:text-yellow-600/30 leading-relaxed custom-scrollbar" style={{ backgroundImage: 'linear-gradient(transparent, transparent 31px, #e5e7eb 31px)', backgroundSize: '100% 32px', lineHeight: '32px' }} /></div>
             
