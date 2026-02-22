@@ -134,7 +134,7 @@ const Timeline: React.FC<{ pages: PageEntry[], onNavigate: (path: string) => voi
                 <div className="w-12 h-12 md:w-16 md:h-16 bg-white p-1 rounded-2xl shadow-xl border-2 border-white group-hover:scale-125 group-hover:border-emerald-500 transition-all duration-300 overflow-hidden">
                   <img 
                     src={assetUrl(page.imageUrl)} 
-                    className="w-full h-full object-cover rounded-xl" 
+                    className={`w-full h-full object-cover rounded-xl ${CONTENT_REGISTRY[page.id]?.sensitivity?.classroomOption.defaultPreview === 'blurred' ? 'blur-md' : ''}`} 
                     alt={page.title} 
                     onError={() => console.warn("Bild lädt nicht (Timeline):", assetUrl(page.imageUrl))}
                   />
@@ -316,17 +316,17 @@ const BildanalyseApp: React.FC<{ onBack: () => void, page: PageEntry }> = ({ onB
                 {/* Ampel Interaktion */}
                 {isTrafficLightStep && (
                   <div className="bg-slate-900 rounded-[2.5rem] p-10 text-center border-b-8 border-slate-950 shadow-2xl space-y-10">
-                     <h4 className="text-white font-black uppercase text-[10px] tracking-[0.3em] opacity-60">Glaubwürdigkeits-Bewertung</h4>
-                     <div className="flex justify-center gap-6 md:gap-12">
+                     <h4 className="text-white font-black uppercase text-xs tracking-widest mb-10 opacity-60 italic">Glaubwürdigkeits-Bewertung</h4>
+                     <div className="flex justify-center gap-10">
                         {['red', 'yellow', 'green'].map((color) => (
                           <button key={color} onClick={() => setAmpel(color)} className={`w-16 h-16 md:w-24 md:h-24 rounded-full border-[6px] transition-all active:scale-75 ${color === 'red' ? 'bg-red-600' : color === 'yellow' ? 'bg-yellow-400' : 'bg-green-500'} ${ampel === color ? 'border-white scale-125 shadow-[0_0_40px_rgba(255,255,255,0.3)]' : 'border-black/30 opacity-30 grayscale'}`} />
                         ))}
                      </div>
                      {ampel && (
-                        <div className={`p-6 rounded-2xl font-bold italic border-2 animate-in zoom-in-95 ${
-                          (feedback as any)[ampel].includes('RICHTIG') ? 'bg-green-900/40 border-green-500 text-green-100' :
-                          (feedback as any)[ampel].includes('TEILWEISE') ? 'bg-yellow-900/40 border-yellow-500 text-yellow-100' :
-                          'bg-red-900/40 border-red-500 text-red-100'
+                        <div className={`mt-12 p-6 bg-slate-800 rounded-2xl font-bold text-slate-300 italic animate-in zoom-in-95 duration-300 ${
+                          (feedback as any)[ampel].includes('RICHTIG') ? 'border-green-500 text-green-100' :
+                          (feedback as any)[ampel].includes('TEILWEISE') ? 'border-yellow-500 text-yellow-100' :
+                          'border-red-500 text-red-100'
                         }`}>
                           { (feedback as any)[ampel] }
                         </div>
@@ -429,38 +429,49 @@ const App: React.FC = () => {
         <Timeline pages={PAGES_DATA} onNavigate={(p) => window.location.hash = p} />
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 md:gap-14">
-          {sortedGallery.map((p, idx) => (
-            <div key={p.id} onClick={() => window.location.hash = p.path} className="group cursor-pointer space-y-8 animate-in fade-in slide-in-from-bottom-10" style={{ animationDelay: `${idx * 150}ms` }}>
-              <div className="aspect-[4/5] rounded-[2.5rem] overflow-hidden border-2 border-white p-2.5 bg-white shadow-2xl group-hover:shadow-[0_20px_60px_-15px_rgba(5,150,105,0.3)] transition-all duration-500 group-hover:-translate-y-4 relative">
-                <div className="w-full h-full relative overflow-hidden rounded-[2rem]">
-                  <img 
-                    src={assetUrl(p.imageUrl)} 
-                    className="w-full h-full object-cover grayscale-0 md:grayscale group-hover:grayscale-0 transition-all duration-1000 opacity-95 group-hover:scale-110" 
-                    alt={p.title} 
-                    onError={() => console.warn("Bild lädt nicht (Gallery):", assetUrl(p.imageUrl))}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/20 to-transparent opacity-0 md:group-hover:opacity-100 transition-opacity flex items-end p-8">
-                    <span className="text-white font-black uppercase text-[10px] tracking-widest bg-emerald-600 px-6 py-3 rounded-full shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
-                      Analyse starten
-                    </span>
+          {sortedGallery.map((p, idx) => {
+            const isBlurred = CONTENT_REGISTRY[p.id]?.sensitivity?.classroomOption.defaultPreview === 'blurred';
+            
+            return (
+              <div key={p.id} onClick={() => window.location.hash = p.path} className="group cursor-pointer space-y-8 animate-in fade-in slide-in-from-bottom-10" style={{ animationDelay: `${idx * 150}ms` }}>
+                <div className="aspect-[4/5] rounded-[2.5rem] overflow-hidden border-2 border-white p-2.5 bg-white shadow-2xl group-hover:shadow-[0_20px_60px_-15px_rgba(5,150,105,0.3)] transition-all duration-500 group-hover:-translate-y-4 relative">
+                  <div className="w-full h-full relative overflow-hidden rounded-[2rem]">
+                    <img 
+                      src={assetUrl(p.imageUrl)} 
+                      className={`w-full h-full object-cover grayscale-0 md:grayscale group-hover:grayscale-0 transition-all duration-1000 opacity-95 group-hover:scale-110 ${isBlurred ? 'blur-2xl' : ''}`} 
+                      alt={p.title} 
+                      onError={() => console.warn("Bild lädt nicht (Gallery):", assetUrl(p.imageUrl))}
+                    />
+                    {isBlurred && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/20 backdrop-blur-sm pointer-events-none group-hover:opacity-0 transition-opacity duration-500">
+                         <div className="bg-white/90 text-slate-900 px-4 py-2 rounded-full font-black text-[10px] uppercase tracking-widest shadow-2xl flex items-center gap-2">
+                           <span>⚠️</span> Sensitiver Inhalt
+                         </div>
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/20 to-transparent opacity-0 md:group-hover:opacity-100 transition-opacity flex items-end p-8">
+                      <span className="text-white font-black uppercase text-[10px] tracking-widest bg-emerald-600 px-6 py-3 rounded-full shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                        Analyse starten
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div className="px-4 text-center">
-                <div className="flex justify-center mb-4">
-                  <span className="text-[10px] font-black bg-emerald-50 px-5 py-2 rounded-full uppercase text-emerald-600 border border-emerald-100 shadow-sm">
-                    {p.year}
-                  </span>
+                <div className="px-4 text-center">
+                  <div className="flex justify-center mb-4">
+                    <span className="text-[10px] font-black bg-emerald-50 px-5 py-2 rounded-full uppercase text-emerald-600 border border-emerald-100 shadow-sm">
+                      {p.year}
+                    </span>
+                  </div>
+                  <h3 className="text-2xl md:text-3xl font-black uppercase tracking-tighter group-hover:text-emerald-600 transition-colors leading-tight">
+                    {p.title}
+                  </h3>
+                  <p className="text-slate-500 mt-4 italic font-medium text-sm leading-relaxed line-clamp-2 px-4 opacity-80 group-hover:opacity-100">
+                    {p.shortText}
+                  </p>
                 </div>
-                <h3 className="text-2xl md:text-3xl font-black uppercase tracking-tighter group-hover:text-emerald-600 transition-colors leading-tight">
-                  {p.title}
-                </h3>
-                <p className="text-slate-500 mt-4 italic font-medium text-sm leading-relaxed line-clamp-2 px-4 opacity-80 group-hover:opacity-100">
-                  {p.shortText}
-                </p>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </main>
       
