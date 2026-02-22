@@ -1,0 +1,58 @@
+{
+  "title": "Visual History",
+  "subtitle": "Digitale Bildanalyse für den Geschichtsunterricht an der BoWi",
+  "pages": [
+    {
+      "id": "napoleon-1801",
+      "title": "Napoleon überquert die Alpen",
+      "subtitle": "Jacques-Louis David • 1801",
+      "description": "Napoleon überquert die Alpen",
+      "path": "bildanalyse/napoleon",
+      "imageUrl": "napoleon-1801.jpg",
+      "year": 1801,
+      "tags": ["NEUZEIT", "FRANKREICH", "MACHTBILD"],
+      "focusTag": "MACHTBILD",
+      "difficulty": 1,
+      "shortText": "Napoleon als strahlender Held auf einem Pferd – Inszenierung oder Wahrheit?"
+    },
+    {
+      "id": "che-portraet-1960",
+      "title": "Che Guevara – Bild als Symbol",
+      "subtitle": "Alberto Korda • 1960",
+      "description": "Guerillero Heroico – Vom Foto zur Weltikone",
+      "path": "bildanalyse/che",
+      "imageUrl": "che-portraet.jpg",
+      "year": 1960,
+      "tags": ["KALTER KRIEG", "REVOLUTION", "IKONE"],
+      "focusTag": "SYMBOLBILD",
+      "difficulty": 3,
+      "shortText": "Das berühmteste Porträt der Welt. Aber wer war der Mann wirklich?"
+    },
+    {
+      "id": "napalm-1972",
+      "title": "Angst und Flucht im Vietnamkrieg",
+      "subtitle": "Nick Út • 1972",
+      "description": "Napalm-Angriff 1972",
+      "path": "bildanalyse/napalm",
+      "imageUrl": "napalm-1972.jpg",
+      "year": 1972,
+      "tags": ["MODERNE", "VIETNAM", "KRIEG"],
+      "focusTag": "KRIEG & MEDIEN",
+      "difficulty": 2,
+      "shortText": "Ein Foto, das die Welt veränderte. Doch darf man das Leid von Kindern so zeigen?"
+    },
+    {
+      "id": "freiheit-1830",
+      "title": "Die Freiheit führt das Volk",
+      "subtitle": "Eugène Delacroix • 1830",
+      "description": "Die Freiheit führt das Volk",
+      "path": "bildanalyse/freiheit",
+      "imageUrl": "freiheit-1830.jpg",
+      "year": 1830,
+      "tags": ["REVOLUTION", "19. JHD.", "FRANKREICH"],
+      "focusTag": "SYMBOLBILD",
+      "difficulty": 2,
+      "shortText": "Das berühmte Gemälde zur Julirevolution. Wer ist die Frau in der Mitte?"
+    }
+  ]
+}
