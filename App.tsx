@@ -155,7 +155,7 @@ const InteractiveText: React.FC<{ text: string, className?: string }> = ({ text,
   const parts = text.split(/(\[\[.*?\]\])/g);
   return (
     <div className="relative">
-      <p className={className}>
+      <div className={className}>
         {parts.map((p, i) => {
           if (p.startsWith('[[') && p.endsWith(']]')) {
             const inner = p.slice(2, -2);
@@ -164,8 +164,8 @@ const InteractiveText: React.FC<{ text: string, className?: string }> = ({ text,
           }
           return <span key={i}>{p}</span>;
         })}
-      </p>
-      {expl && <div className="absolute top-full mt-2 bg-white p-4 rounded-2xl shadow-2xl border border-slate-100 text-slate-800 text-sm z-[250] w-64 animate-in fade-in zoom-in-95"><b>{expl.w}:</b> {expl.t}</div>}
+      </div>
+      {expl && <div className="absolute top-full mt-2 bg-white p-4 rounded-2xl shadow-2xl border border-slate-100 text-slate-800 text-sm z-[400] w-64 animate-in fade-in zoom-in-95"><b>{expl.w}:</b> {expl.t}</div>}
     </div>
   );
 };
@@ -287,19 +287,32 @@ const BildanalyseApp: React.FC<{ onBack: () => void, page: PageEntry }> = ({ onB
           <div className="max-w-3xl mx-auto space-y-4 md:space-y-6">
             <div className="flex justify-center"><div className="bg-slate-200/50 p-1.5 rounded-2xl flex gap-1">{['level_easy', 'level_medium', 'level_hard'].map((l) => (<button key={l} onClick={() => setLevel(l as any)} className={`px-3 md:px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${level === l ? 'bg-white shadow-md text-emerald-600' : 'text-slate-500 hover:text-slate-700'}`}>{l === 'level_easy' ? 'Easy' : l === 'level_medium' ? 'Normal' : 'Pro'}</button>))}</div></div>
             
-            {/* Verkleinerter Header (Kleinere Anzeige des Bildes) */}
-            <div onClick={() => setIsZoomOpen(true)} className="bg-slate-900 rounded-[2rem] p-4 md:p-6 text-center relative overflow-hidden h-40 md:h-56 flex flex-col justify-center border-b-4 border-slate-950 shadow-2xl cursor-zoom-in group">
+            {/* Bild-Header: Das reale Bild wird nun klein aber klar angezeigt */}
+            <div className="bg-slate-900 rounded-[2rem] p-4 md:p-6 text-center relative overflow-hidden h-44 md:h-64 flex flex-col justify-center border-b-4 border-slate-950 shadow-2xl group">
+              {/* Blur-Hintergrund für Atmosphäre */}
               <img 
                 src={assetUrl(page.imageUrl)} 
-                className="absolute inset-0 w-full h-full object-cover opacity-30 blur-xl group-hover:opacity-40 transition-opacity" 
-                alt={page.title} 
-                onError={() => console.warn("Bild lädt nicht (BG-Blur):", assetUrl(page.imageUrl))}
+                className="absolute inset-0 w-full h-full object-cover opacity-20 blur-2xl pointer-events-none" 
+                alt="" 
               />
-              <div className="relative z-10 space-y-2">
-                <span className="bg-emerald-600 text-[8px] font-black tracking-widest uppercase px-4 py-1.5 rounded-full text-white">SCHRITT {step + 1} VON {steps.length}</span>
-                <h2 className="text-xl md:text-4xl font-black text-white uppercase tracking-tighter leading-none">{curr.title}</h2>
-                <p className="text-emerald-400 font-black uppercase text-[10px] md:text-sm italic tracking-widest opacity-80">{curr.subtitle}</p>
-                <div className="mt-2 flex justify-center"><div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center border border-white/20 group-hover:scale-110 transition-all text-lg">🔍</div></div>
+              <div className="relative z-10 flex flex-col md:flex-row items-center justify-center gap-6">
+                {/* Reales Vorschaubild */}
+                <div onClick={() => setIsZoomOpen(true)} className="relative cursor-zoom-in group-hover:scale-105 transition-transform duration-500 shadow-2xl rounded-xl border-2 border-white/20 overflow-hidden w-28 h-20 md:w-40 md:h-28 flex-shrink-0">
+                  <img 
+                    src={assetUrl(page.imageUrl)} 
+                    className={`w-full h-full object-cover ${sensitivity && !isRevealed && sensitivity.classroomOption.defaultPreview === 'blurred' ? 'blur-md' : ''}`}
+                    alt={page.title}
+                  />
+                  <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors flex items-center justify-center">
+                    <span className="text-white text-xl">🔍</span>
+                  </div>
+                </div>
+
+                <div className="text-center md:text-left space-y-2">
+                  <span className="bg-emerald-600 text-[8px] font-black tracking-widest uppercase px-4 py-1.5 rounded-full text-white">SCHRITT {step + 1} VON {steps.length}</span>
+                  <h2 className="text-xl md:text-3xl font-black text-white uppercase tracking-tighter leading-none">{curr.title}</h2>
+                  <p className="text-emerald-400 font-black uppercase text-[10px] md:text-sm italic tracking-widest opacity-80">{curr.subtitle}</p>
+                </div>
               </div>
             </div>
 
@@ -347,7 +360,7 @@ const BildanalyseApp: React.FC<{ onBack: () => void, page: PageEntry }> = ({ onB
           </div>
         </main>
 
-        <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className={`no-print fixed bottom-6 right-6 md:static z-200 bg-slate-900 text-white w-14 h-14 md:w-10 md:h-auto md:py-8 md:px-1 rounded-full md:rounded-l-2xl shadow-2xl transition-all duration-300 hover:bg-emerald-600 flex flex-col items-center justify-center gap-4 ${isSidebarOpen ? 'md:translate-x-full opacity-0' : ''}`}><span className="text-xl">📝</span><span className="hidden md:block [writing-mode:vertical-lr] font-black uppercase text-[10px] tracking-widest rotate-180">Notizen</span></button>
+        <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className={`no-print fixed bottom-6 right-6 md:static z-[200] bg-slate-900 text-white w-14 h-14 md:w-10 md:h-auto md:py-8 md:px-1 rounded-full md:rounded-l-2xl shadow-2xl transition-all duration-300 hover:bg-emerald-600 flex flex-col items-center justify-center gap-4 ${isSidebarOpen ? 'md:translate-x-full opacity-0' : ''}`}><span className="text-xl">📝</span><span className="hidden md:block [writing-mode:vertical-lr] font-black uppercase text-[10px] tracking-widest rotate-180">Notizen</span></button>
         
         {/* Sidebar mit sehr hohem Z-Index, um über dem Zoom-Modal zu bleiben */}
         <aside className={`fixed inset-y-0 right-0 md:static bg-white border-l shadow-2xl transition-all duration-500 z-[250] flex flex-col h-full ${isSidebarOpen ? 'w-full md:w-[400px]' : 'w-0 translate-x-full opacity-0 pointer-events-none'}`}>
