@@ -128,7 +128,12 @@ const Timeline: React.FC<{ pages: PageEntry[], onNavigate: (path: string) => voi
             <div key={page.id} className="absolute cursor-pointer group" style={{ left: `${getPos(page.year)}%` }} onClick={() => onNavigate(page.path)}>
               <div className={`flex flex-col items-center absolute left-1/2 -translate-x-1/2 ${idx % 2 === 0 ? 'bottom-4' : 'top-4'}`}>
                 <div className="w-10 h-10 md:w-14 md:h-14 bg-white p-1 rounded-xl shadow-lg border-2 border-slate-100 overflow-hidden group-hover:scale-125 group-hover:border-indigo-500 transition-all duration-300">
-                  <img src={assetUrl(page.imageUrl)} className="w-full h-full object-cover" alt="" />
+                  <img 
+                    src={assetUrl(page.imageUrl)} 
+                    className="w-full h-full object-cover" 
+                    alt={page.title} 
+                    onError={() => console.warn("Bild lädt nicht (Timeline):", assetUrl(page.imageUrl))}
+                  />
                 </div>
                 <div className="w-3 h-3 bg-indigo-600 rounded-full border-2 border-white mt-1 shadow-sm"></div>
                 <span className="text-[9px] font-black text-slate-400 mt-1 whitespace-nowrap">{page.year}</span>
@@ -185,7 +190,14 @@ const ZoomModal: React.FC<{ imageUrl: string, onClose: () => void }> = ({ imageU
         Zoom: {Math.round(zoom * 100)}% {zoom > 1 && "• Ziehen zum Bewegen"}
       </div>
       <div className={`w-full h-full flex items-center justify-center overflow-hidden cursor-${zoom > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default'}`} onMouseDown={onMouseDown} onMouseMove={onMouseMove} onMouseUp={() => setIsDragging(false)} onMouseLeave={() => setIsDragging(false)}>
-        <img src={assetUrl(imageUrl)} draggable={false} className="max-w-full max-h-full object-contain transition-transform duration-200 select-none shadow-2xl" style={{ transform: `translate(${position.x}px, ${position.y}px) scale(${zoom})` }} alt="Analysebild" />
+        <img 
+          src={assetUrl(imageUrl)} 
+          draggable={false} 
+          className="max-w-full max-h-full object-contain transition-transform duration-200 select-none shadow-2xl" 
+          style={{ transform: `translate(${position.x}px, ${position.y}px) scale(${zoom})` }} 
+          alt="Analysebild Zoom" 
+          onError={() => console.warn("Bild lädt nicht (ZoomModal):", assetUrl(imageUrl))}
+        />
       </div>
     </div>
   );
@@ -252,7 +264,6 @@ const BildanalyseApp: React.FC<{ onBack: () => void, page: PageEntry }> = ({ onB
     }
   };
 
-  // Find out which step is the traffic light
   const isTrafficLightStep = steps[step]?.title === "WAHRHEITSGEHALT" || steps[step]?.title === "QUELLENKRITIK" || steps[step]?.title === "GLAUBWÜRDIGKEIT";
 
   return (
@@ -281,7 +292,12 @@ const BildanalyseApp: React.FC<{ onBack: () => void, page: PageEntry }> = ({ onB
               <>
                 <div className="flex justify-center"><div className="bg-slate-200/50 p-1.5 rounded-2xl flex gap-1">{['level_easy', 'level_medium', 'level_hard'].map((l) => (<button key={l} onClick={() => setLevel(l as any)} className={`px-3 md:px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${level === l ? 'bg-white shadow-md text-indigo-600' : 'text-slate-500 hover:text-slate-700'}`}>{l === 'level_easy' ? 'Easy' : l === 'level_medium' ? 'Normal' : 'Pro'}</button>))}</div></div>
                 <div onClick={() => setIsZoomOpen(true)} className="bg-[#0F172A] rounded-[2rem] p-6 md:p-12 text-center relative overflow-hidden min-h-[280px] md:min-h-[320px] flex flex-col justify-center border-b-8 border-slate-950 shadow-2xl cursor-zoom-in group">
-                  <img src={assetUrl(page.imageUrl)} className="absolute inset-0 w-full h-full object-cover opacity-30 blur-2xl group-hover:opacity-40" alt="" />
+                  <img 
+                    src={assetUrl(page.imageUrl)} 
+                    className="absolute inset-0 w-full h-full object-cover opacity-30 blur-2xl group-hover:opacity-40" 
+                    alt={page.title} 
+                    onError={() => console.warn("Bild lädt nicht (BG-Blur):", assetUrl(page.imageUrl))}
+                  />
                   <div className="relative z-10 space-y-4">
                     <span className="bg-indigo-600 text-[10px] font-black tracking-widest uppercase px-5 py-2 rounded-full text-white">SCHRITT {step + 1} VON {steps.length}</span>
                     <h2 className="text-2xl md:text-5xl font-black text-white uppercase tracking-tighter leading-none">{curr.title}</h2>
@@ -391,7 +407,12 @@ const App: React.FC = () => {
       <header className="py-16 md:py-32 px-6 text-center"><h1 className="text-5xl md:text-9xl font-black italic uppercase tracking-tighter leading-none mb-6 text-slate-900 animate-in slide-in-from-top-10 duration-1000">Visual History</h1><div className="w-16 md:w-20 h-2 bg-indigo-600 mx-auto rounded-full mb-8"></div><p className="text-slate-400 font-black uppercase tracking-[0.4em] text-[10px] md:text-xs">Digitale Bildanalyse • Interaktives Dossier</p></header>
       <main className="max-w-7xl mx-auto p-4 md:p-12 space-y-24">
         <Timeline pages={PAGES_DATA} onNavigate={(p) => window.location.hash = p} />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12">{sortedGallery.map((p, idx) => (<div key={p.id} onClick={() => window.location.hash = p.path} className="group cursor-pointer space-y-6 animate-in fade-in slide-in-from-bottom-10" style={{ animationDelay: `${idx * 150}ms` }}><div className="aspect-[4/5] rounded-[2rem] overflow-hidden border-2 border-slate-50 p-2 bg-white shadow-xl group-hover:shadow-2xl transition-all duration-500 group-hover:-translate-y-4"><div className="w-full h-full relative overflow-hidden rounded-[1.5rem]"><img src={assetUrl(p.imageUrl)} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 opacity-90 group-hover:scale-110" alt="" /><div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-6"><span className="text-white font-black uppercase text-[10px] tracking-widest bg-indigo-600 px-4 py-2 rounded-full shadow-lg">Analysieren</span></div></div></div><div className="px-4 text-center"><span className="text-[9px] font-black bg-indigo-50 px-4 py-1.5 rounded-full uppercase text-indigo-600 border border-indigo-100">{p.year}</span><h3 className="text-2xl md:text-3xl font-black uppercase mt-4 tracking-tighter group-hover:text-indigo-600 transition-colors">{p.title}</h3><p className="text-slate-400 mt-4 italic font-medium text-sm leading-relaxed line-clamp-2">{p.shortText}</p></div></div>))}</div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12">{sortedGallery.map((p, idx) => (<div key={p.id} onClick={() => window.location.hash = p.path} className="group cursor-pointer space-y-6 animate-in fade-in slide-in-from-bottom-10" style={{ animationDelay: `${idx * 150}ms` }}><div className="aspect-[4/5] rounded-[2rem] overflow-hidden border-2 border-slate-50 p-2 bg-white shadow-xl group-hover:shadow-2xl transition-all duration-500 group-hover:-translate-y-4"><div className="w-full h-full relative overflow-hidden rounded-[1.5rem]"><img 
+          src={assetUrl(p.imageUrl)} 
+          className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 opacity-90 group-hover:scale-110" 
+          alt={p.title} 
+          onError={() => console.warn("Bild lädt nicht (Gallery):", assetUrl(p.imageUrl))}
+        /><div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-6"><span className="text-white font-black uppercase text-[10px] tracking-widest bg-indigo-600 px-4 py-2 rounded-full shadow-lg">Analysieren</span></div></div></div><div className="px-4 text-center"><span className="text-[9px] font-black bg-indigo-50 px-4 py-1.5 rounded-full uppercase text-indigo-600 border border-indigo-100">{p.year}</span><h3 className="text-2xl md:text-3xl font-black uppercase mt-4 tracking-tighter group-hover:text-indigo-600 transition-colors">{p.title}</h3><p className="text-slate-400 mt-4 italic font-medium text-sm leading-relaxed line-clamp-2">{p.shortText}</p></div></div>))}</div>
       </main>
       <footer className="py-20 border-t border-slate-50 text-center text-slate-200"><p className="text-[9px] font-black uppercase tracking-[0.6em]">&copy; {new Date().getFullYear()} • VISUAL HISTORY • v2.5</p></footer>
     </div>
