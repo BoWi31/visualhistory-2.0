@@ -57,7 +57,7 @@ const PAGES_DATA: PageEntry[] = [
     "tags": ["REVOLUTION", "19. JHD.", "FRANKREICH"],
     "focusTag": "SYMBOLBILD",
     "difficulty": 2,
-    "shortText": "Das berühmte Gemälde zur Julirevolution. Wer ist die Frau in der Mitte?"
+    "shortText": "Das berühmteste Gemälde zur Julirevolution. Wer ist die Frau in der Mitte?"
   }
 ];
 
@@ -252,7 +252,7 @@ const BildanalyseApp: React.FC<{ onBack: () => void, page: PageEntry }> = ({ onB
     }
   };
 
-  // Find out which step is the traffic light (traffic light is step 5, index 4)
+  // Find out which step is the traffic light
   const isTrafficLightStep = steps[step]?.title === "WAHRHEITSGEHALT" || steps[step]?.title === "QUELLENKRITIK" || steps[step]?.title === "GLAUBWÜRDIGKEIT";
 
   return (
@@ -328,7 +328,43 @@ const BildanalyseApp: React.FC<{ onBack: () => void, page: PageEntry }> = ({ onB
         <aside className={`fixed inset-0 md:static bg-white/95 backdrop-blur-xl md:bg-white border-l shadow-2xl transition-all duration-500 z-[100] flex flex-col h-full ${isSidebarOpen ? 'w-full md:w-[450px]' : 'w-0 translate-x-full opacity-0 pointer-events-none'}`}>
           <div className="p-4 md:p-6 border-b flex justify-between items-center bg-slate-50/50"><h3 className="font-black uppercase text-[10px] tracking-widest text-slate-900 flex items-center gap-3"><span className="bg-slate-900 text-white p-2 rounded-lg text-sm">📝</span> Notizen • Schritt {step+1}</h3><button onClick={() => setIsSidebarOpen(false)} className="text-slate-400 hover:text-slate-900 p-2 text-2xl">✕</button></div>
           <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-8"><div className="bg-yellow-50 rounded-[1.5rem] p-5 md:p-6 border-2 border-yellow-100 shadow-inner flex flex-col min-h-[300px]"><textarea value={userNotes[step] || ""} onChange={(e) => updateNote(e.target.value)} placeholder={`Erkenntnisse hier festhalten...`} className="w-full flex-grow bg-transparent border-none focus:ring-0 text-slate-800 font-bold text-base md:text-lg resize-none placeholder:text-yellow-600/30 leading-relaxed custom-scrollbar" style={{ backgroundImage: 'linear-gradient(transparent, transparent 31px, #e5e7eb 31px)', backgroundSize: '100% 32px', lineHeight: '32px' }} /></div>
-            <div className="space-y-4 pt-10"><h4 className="text-[10px] font-black uppercase text-slate-400 tracking-widest border-b pb-2">Verlauf</h4>{steps.map((s, idx) => (userNotes[idx] && (<div key={idx} className={`p-4 rounded-xl border transition-all cursor-pointer ${idx === step ? 'bg-indigo-50 border-indigo-200' : 'bg-white border-slate-100 opacity-60'}`} onClick={() => setStep(idx)}><div className="flex justify-between items-center mb-2"><p className="text-[9px] font-black uppercase text-slate-400">{s.title}</p><span className="text-[8px] font-black text-indigo-400">SCHRITT {idx+1}</span></div><p className="text-xs italic text-slate-600 line-clamp-2">{userNotes[idx]}</p></div>))))}</div>
+            
+            <div className="space-y-4 pt-10">
+              <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-widest border-b pb-2">
+                Verlauf
+              </h4>
+
+              {steps.map((s, idx) => {
+                if (!userNotes[idx]) return null;
+
+                const isActive = idx === step;
+
+                return (
+                  <div
+                    key={idx}
+                    className={`p-4 rounded-xl border transition-all cursor-pointer ${
+                      isActive
+                        ? "bg-indigo-50 border-indigo-200"
+                        : "bg-white border-slate-100 opacity-60"
+                    }`}
+                    onClick={() => setStep(idx)}
+                  >
+                    <div className="flex justify-between items-center mb-2">
+                      <p className="text-[9px] font-black uppercase text-slate-400">
+                        {s.title}
+                      </p>
+                      <span className="text-[8px] font-black text-indigo-400">
+                        SCHRITT {idx + 1}
+                      </span>
+                    </div>
+
+                    <p className="text-xs italic text-slate-600 line-clamp-2">
+                      {userNotes[idx]}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
           </div>
           <div className="p-4 md:p-6 border-t bg-slate-50/50 flex flex-col gap-3"><button onClick={() => window.print()} className="w-full bg-slate-900 text-white py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest hover:bg-indigo-600 shadow-xl">Protokoll drucken</button></div>
         </aside>
