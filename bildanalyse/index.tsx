@@ -6,7 +6,6 @@ import { assetUrl } from '../types';
 
 const App: React.FC = () => {
   const [activeStep, setActiveStep] = useState(0);
-  // Add level state to support the nested content structure in AnalysisStep
   const [level, setLevel] = useState<'level_easy' | 'level_medium' | 'level_hard'>('level_medium');
   const [showHints, setShowHints] = useState(false);
   const [showWritingHelp, setShowWritingHelp] = useState(false);
@@ -15,7 +14,6 @@ const App: React.FC = () => {
 
   const paintingUrl = "freiheit-1830.jpg";
   const currentStep = STEPS[activeStep];
-  // Helper to access current level content as the properties are now nested
   const activeContent = currentStep.content[level];
 
   const handlePrint = () => {
@@ -23,7 +21,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-900 overflow-x-hidden selection:bg-blue-200">
+    <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-900 overflow-x-hidden selection:bg-emerald-200">
       {/* Header Navigation */}
       <nav className="no-print bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between sticky top-0 z-50">
         <div className="flex items-center gap-3">
@@ -34,7 +32,7 @@ const App: React.FC = () => {
           </div>
           <div className="text-left leading-none">
             <h1 className="font-black text-xs uppercase tracking-tight text-slate-900">Bildanalyse</h1>
-            <p className="text-[9px] uppercase font-bold text-slate-400 tracking-widest mt-0.5">Geschichte 7</p>
+            <p className="text-[9px] uppercase font-bold text-emerald-600 tracking-widest mt-0.5">BoWi Geschichte</p>
           </div>
         </div>
 
@@ -45,7 +43,7 @@ const App: React.FC = () => {
               onClick={() => { setActiveStep(idx); setShowHints(false); setShowWritingHelp(false); }}
               className={`w-8 h-8 md:w-11 md:h-11 rounded-xl flex items-center justify-center text-xs md:text-xl transition-all ${
                 activeStep === idx 
-                ? 'bg-indigo-600 text-white shadow-lg border border-indigo-200 scale-110' 
+                ? 'bg-emerald-600 text-white shadow-lg border border-emerald-200 scale-110' 
                 : 'text-slate-400 hover:text-slate-600'
               }`}
             >
@@ -61,24 +59,22 @@ const App: React.FC = () => {
         </button>
       </nav>
 
-      {/* Gelbes Banner */}
-      <div className="no-print bg-[#FFD700] border-b border-black/10 px-6 py-4 flex items-center justify-center gap-3 shadow-sm z-40">
+      <div className="no-print bg-emerald-500 border-b border-black/10 px-6 py-4 flex items-center justify-center gap-3 shadow-sm z-40">
         <span className="text-2xl">📝</span>
-        <p className="text-[10px] md:text-xs font-black text-slate-900 uppercase tracking-widest text-center">
+        <p className="text-[10px] md:text-xs font-black text-white uppercase tracking-widest text-center">
           {INSTRUCTION_HINT}
         </p>
       </div>
 
       <main className="no-print flex-grow container mx-auto px-4 py-8 md:py-12 max-w-4xl flex flex-col gap-10">
         
-        {/* Level Switcher */}
         <div className="flex justify-center">
           <div className="bg-slate-200/50 p-1.5 rounded-2xl flex gap-1">
             {(['level_easy', 'level_medium', 'level_hard'] as const).map((l) => (
               <button 
                 key={l} 
                 onClick={() => setLevel(l)} 
-                className={`px-3 md:px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${level === l ? 'bg-white shadow-md text-indigo-600' : 'text-slate-500 hover:text-slate-700'}`}
+                className={`px-3 md:px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${level === l ? 'bg-white shadow-md text-emerald-600' : 'text-slate-500 hover:text-slate-700'}`}
               >
                 {l === 'level_easy' ? 'Easy' : l === 'level_medium' ? 'Normal' : 'Pro'}
               </button>
@@ -86,11 +82,10 @@ const App: React.FC = () => {
           </div>
         </div>
 
-        {/* Zentrales Schwarzes Modul */}
-        <div className="bg-[#0F172A] rounded-[2.5rem] overflow-hidden shadow-2xl relative">
+        <div className="bg-slate-900 rounded-[2.5rem] overflow-hidden shadow-2xl relative">
           <div className="p-8 md:p-12 flex flex-col items-center justify-center text-center min-h-[340px]">
-             <span className="bg-indigo-600/90 text-[10px] font-black tracking-widest uppercase px-5 py-2 rounded-full text-white mb-8 border border-white/20">
-               SCHRITT {activeStep + 1} VON 6
+             <span className="bg-emerald-600/90 text-[10px] font-black tracking-widest uppercase px-5 py-2 rounded-full text-white mb-8 border border-white/20">
+               SCHRITT {activeStep + 1} VON {STEPS.length}
              </span>
              
              <div className="w-24 h-24 md:w-32 md:h-32 bg-slate-800/50 rounded-full flex items-center justify-center mb-8 border border-white/10 group cursor-pointer" onClick={() => setIsModalOpen(true)}>
@@ -100,7 +95,7 @@ const App: React.FC = () => {
              <h2 className="text-3xl md:text-5xl font-black text-white tracking-tighter uppercase mb-2">
                {currentStep.title}
              </h2>
-             <p className="text-indigo-400 font-black text-sm md:text-xl italic uppercase tracking-tight">
+             <p className="text-emerald-400 font-black text-sm md:text-xl italic uppercase tracking-tight">
                {currentStep.subtitle}
              </p>
           </div>
@@ -109,29 +104,23 @@ const App: React.FC = () => {
           </div>
         </div>
 
-        {/* Beschreibungstext */}
         <div className="text-center px-4">
            <p className="text-2xl md:text-3xl font-black text-slate-800 leading-tight">
-             {/* Fix: Access property via activeContent which represents the selected level */}
              {activeContent.description}
            </p>
         </div>
 
-        {/* Kontext-Box */}
-        {/* Fix: Access property via activeContent */}
         {activeContent.contextText && (
-          <div className="p-6 md:p-8 bg-indigo-900 text-indigo-100 rounded-[2rem] shadow-xl border-l-8 border-indigo-500 italic text-lg leading-relaxed">
+          <div className="p-6 md:p-8 bg-sky-900 text-sky-100 rounded-[2rem] shadow-xl border-l-8 border-emerald-500 italic text-lg leading-relaxed">
              {activeContent.contextText}
           </div>
         )}
 
-        {/* Fragen-Liste (Gezielte Fragen nach dem Bild) */}
         <div className="bg-white rounded-[2.5rem] shadow-xl border border-slate-200 p-8 md:p-12">
           <div className="space-y-8">
-            {/* Fix: Access property via activeContent */}
             {activeContent.points?.map((point, i) => (
               <div key={i} className="flex items-start gap-6 group">
-                <span className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-slate-50 border-2 border-slate-100 flex items-center justify-center text-indigo-600 font-black text-sm md:text-lg shadow-sm flex-shrink-0 group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                <span className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-slate-50 border-2 border-slate-100 flex items-center justify-center text-emerald-600 font-black text-sm md:text-lg shadow-sm flex-shrink-0 group-hover:bg-emerald-600 group-hover:text-white transition-all">
                   {i + 1}
                 </span>
                 <p className="text-xl md:text-2xl font-black text-slate-800 leading-tight pt-1 md:pt-2">
@@ -142,15 +131,14 @@ const App: React.FC = () => {
           </div>
         </div>
 
-        {/* Accordions */}
         <div className="flex flex-col gap-4">
           <button 
             onClick={() => setShowHints(!showHints)}
-            className="bg-[#0F172A] hover:bg-slate-800 text-white rounded-[1.5rem] p-7 md:p-8 flex items-center justify-between transition-all group active:scale-95 border-b-8 border-slate-900 shadow-xl"
+            className="bg-slate-900 hover:bg-slate-800 text-white rounded-[1.5rem] p-7 md:p-8 flex items-center justify-between transition-all group active:scale-95 border-b-8 border-slate-950 shadow-xl"
           >
             <div className="flex items-center gap-5">
               <span className="text-3xl">🔍</span>
-              <span className="font-black uppercase tracking-[0.2em] text-sm md:text-lg">Detektiv-Lupe</span>
+              <span className="font-black uppercase tracking-[0.2em] text-sm md:text-lg">Tipps & Tricks</span>
             </div>
             <svg xmlns="http://www.w3.org/2000/svg" className={`h-8 w-8 transition-transform ${showHints ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" />
@@ -158,7 +146,6 @@ const App: React.FC = () => {
           </button>
           {showHints && (
             <div className="bg-amber-50 rounded-[1.5rem] p-6 border-4 border-amber-200/50 space-y-3 animate-in slide-in-from-top-4 duration-300">
-              {/* Fix: Access property via activeContent */}
               {activeContent.hints.map((h, i) => (
                 <div key={i} className="bg-white p-5 rounded-2xl font-black text-slate-700 flex items-center gap-4 shadow-sm border border-amber-100 italic">
                   <span className="text-amber-500">★</span> {h}
@@ -169,7 +156,7 @@ const App: React.FC = () => {
 
           <button 
             onClick={() => setShowWritingHelp(!showWritingHelp)}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-[1.5rem] p-7 md:p-8 flex items-center justify-between transition-all active:scale-95 border-b-8 border-indigo-900 shadow-xl"
+            className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-[1.5rem] p-7 md:p-8 flex items-center justify-between transition-all active:scale-95 border-b-8 border-emerald-900 shadow-xl"
           >
             <div className="flex items-center gap-5">
               <span className="text-3xl">💡</span>
@@ -180,10 +167,9 @@ const App: React.FC = () => {
             </svg>
           </button>
           {showWritingHelp && (
-            <div className="bg-indigo-50 rounded-[1.5rem] p-6 border-4 border-indigo-200/50 space-y-3 animate-in slide-in-from-top-4 duration-300">
-              {/* Fix: Access property via activeContent */}
+            <div className="bg-emerald-50 rounded-[1.5rem] p-6 border-4 border-emerald-200/50 space-y-3 animate-in slide-in-from-top-4 duration-300">
               {activeContent.sentenceStarters.map((s, i) => (
-                <div key={i} className="bg-white p-5 rounded-2xl font-black text-indigo-900/70 italic shadow-sm border border-indigo-100">
+                <div key={i} className="bg-white p-5 rounded-2xl font-black text-emerald-900/70 italic shadow-sm border border-emerald-100">
                    „{s}“
                 </div>
               ))}
@@ -191,9 +177,8 @@ const App: React.FC = () => {
           )}
         </div>
 
-        {/* Ampel (Schritt 5) */}
         {activeStep === 4 && (
-          <div className="bg-[#0F172A] rounded-[2.5rem] p-10 text-center border-b-8 border-slate-900 shadow-2xl">
+          <div className="bg-slate-900 rounded-[2.5rem] p-10 text-center border-b-8 border-slate-950 shadow-2xl">
              <h4 className="text-white font-black uppercase text-xs tracking-widest mb-10 opacity-60 italic">Glaubwürdigkeits-Bewertung</h4>
              <div className="flex justify-center gap-10">
                 {['red', 'yellow', 'green'].map((color) => (
@@ -214,18 +199,17 @@ const App: React.FC = () => {
           </div>
         )}
 
-        {/* Navigation */}
         <div className="flex items-center justify-between pt-10 pb-20">
           <button 
             disabled={activeStep === 0}
             onClick={() => { setActiveStep(prev => prev - 1); setShowHints(false); setShowWritingHelp(false); window.scrollTo({top: 0, behavior: 'smooth'}); }}
-            className="flex items-center gap-4 py-5 px-10 rounded-[1.5rem] font-black uppercase tracking-widest text-xs md:text-sm text-slate-400 border-2 border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-0 transition-all active:scale-95"
+            className="flex items-center gap-4 py-5 px-10 rounded-[1.5rem] font-black uppercase tracking-widest text-xs text-slate-400 border-2 border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-0 transition-all active:scale-95"
           >
             Zurück
           </button>
           <button 
             onClick={() => { 
-              if (activeStep < 5) {
+              if (activeStep < STEPS.length - 1) {
                 setActiveStep(prev => prev + 1); 
                 setShowHints(false); 
                 setShowWritingHelp(false); 
@@ -234,9 +218,9 @@ const App: React.FC = () => {
                 handlePrint();
               }
             }}
-            className="flex items-center gap-4 py-6 px-14 rounded-[1.5rem] font-black uppercase tracking-widest text-xs md:text-sm text-white bg-indigo-600 hover:bg-indigo-700 shadow-2xl active:scale-95 border-b-8 border-indigo-900 transition-all"
+            className="flex items-center gap-4 py-6 px-14 rounded-[1.5rem] font-black uppercase tracking-widest text-xs text-white bg-emerald-600 hover:bg-emerald-700 shadow-2xl active:scale-95 border-b-8 border-emerald-900 transition-all"
           >
-            {activeStep < 5 ? 'Nächster Schritt' : 'Drucken & Fertig'}
+            {activeStep < STEPS.length - 1 ? 'Nächster Schritt' : 'Drucken & Fertig'}
           </button>
         </div>
       </main>
@@ -251,7 +235,6 @@ const App: React.FC = () => {
         <Infographic 
           ampelChoice={ampelChoice} 
           steps={STEPS} 
-          // Fix: Pass required level prop to Infographic
           level={level}
           title="Die Freiheit führt das Volk" 
           artist="Eugène Delacroix" 
