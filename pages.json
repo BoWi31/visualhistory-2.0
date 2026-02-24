@@ -1,3 +1,4 @@
+
 {
   "title": "Visual History",
   "subtitle": "Digitale Bildanalyse für den Geschichtsunterricht an der BoWi",
@@ -8,7 +9,7 @@
       "subtitle": "Jacques-Louis David • 1801",
       "description": "Napoleon überquert die Alpen",
       "path": "bildanalyse/napoleon",
-      "imageUrl": "napoleon-1801.jpg",
+      "imageUrl": "assets/images/napoleon-1801.jpg",
       "year": 1801,
       "tags": ["NEUZEIT", "FRANKREICH", "MACHTBILD"],
       "focusTag": "MACHTBILD",
@@ -16,12 +17,25 @@
       "shortText": "Napoleon als strahlender Held auf einem Pferd – Inszenierung oder Wahrheit?"
     },
     {
+      "id": "freiheit-1830",
+      "title": "Die Freiheit führt das Volk",
+      "subtitle": "Eugène Delacroix • 1830",
+      "description": "Die Freiheit führt das Volk",
+      "path": "bildanalyse/freiheit",
+      "imageUrl": "assets/images/freiheit-1830.jpg",
+      "year": 1830,
+      "tags": ["REVOLUTION", "19. JHD.", "FRANKREICH"],
+      "focusTag": "SYMBOLBILD",
+      "difficulty": 2,
+      "shortText": "Das berühmteste Gemälde zur Julirevolution. Wer ist die Frau in der Mitte?"
+    },
+    {
       "id": "che-portraet-1960",
       "title": "Che Guevara – Bild als Symbol",
       "subtitle": "Alberto Korda • 1960",
       "description": "Guerillero Heroico – Vom Foto zur Weltikone",
       "path": "bildanalyse/che",
-      "imageUrl": "che-portraet.jpg",
+      "imageUrl": "assets/images/che-portraet.jpg",
       "year": 1960,
       "tags": ["KALTER KRIEG", "REVOLUTION", "IKONE"],
       "focusTag": "SYMBOLBILD",
@@ -29,30 +43,30 @@
       "shortText": "Das berühmteste Porträt der Welt. Aber wer war der Mann wirklich?"
     },
     {
+      "id": "patterson-gimlin-1967",
+      "title": "Patterson–Gimlin-Film (1967) – Bigfoot-Debatte",
+      "subtitle": "Patterson & Gimlin • 1967",
+      "description": "Standbild aus dem berühmten Bigfoot-Film",
+      "path": "bildanalyse/bigfoot",
+      "imageUrl": "assets/images/patterson-gimlin-1967.jpg",
+      "year": 1967,
+      "tags": ["MYTHOS", "MEDIENKRITIK", "USA"],
+      "focusTag": "QUELLENKRITIK",
+      "difficulty": 2,
+      "shortText": "Echter Beweis für ein Monster oder ein genialer Hoax im Kostüm?"
+    },
+    {
       "id": "napalm-1972",
       "title": "Angst und Flucht im Vietnamkrieg",
       "subtitle": "Nick Út • 1972",
       "description": "Napalm-Angriff 1972",
       "path": "bildanalyse/napalm",
-      "imageUrl": "napalm1972.jpg",
+      "imageUrl": "assets/images/napalm1972.jpg",
       "year": 1972,
       "tags": ["MODERNE", "VIETNAM", "KRIEG"],
       "focusTag": "KRIEG & MEDIEN",
       "difficulty": 2,
       "shortText": "Ein Foto, das die Welt veränderte. Doch darf man das Leid von Kindern so zeigen?"
-    },
-    {
-      "id": "freiheit-1830",
-      "title": "Die Freiheit führt das Volk",
-      "subtitle": "Eugène Delacroix • 1830",
-      "description": "Die Freiheit führt das Volk",
-      "path": "bildanalyse/freiheit",
-      "imageUrl": "freiheit-1830.jpg",
-      "year": 1830,
-      "tags": ["REVOLUTION", "19. JHD.", "FRANKREICH"],
-      "focusTag": "SYMBOLBILD",
-      "difficulty": 2,
-      "shortText": "Das berühmteste Gemälde zur Julirevolution. Wer ist die Frau in der Mitte?"
     }
   ]
 }
