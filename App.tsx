@@ -1,15 +1,11 @@
+
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { PageEntry, assetUrl } from './types';
 import * as FreiheitData from './bildanalyse/freiheitfuehrtvolk';
-import * as NapoleonData from './bildanalyse/napoleon';
-import * as CheData from './bildanalyse/che';
 import { CONTENT_REGISTRY } from './analysisContent';
 import { Infographic } from './bildanalyse/components/Infographic';
 
 // BoWi Design-Konstanten
-const BOWI_GREEN = "emerald-600";
-const BOWI_BLUE = "sky-800";
-
 const PAGES_DATA: PageEntry[] = [
   {
     "id": "napoleon-1801",
@@ -17,7 +13,7 @@ const PAGES_DATA: PageEntry[] = [
     "subtitle": "Jacques-Louis David • 1801",
     "description": "Napoleon überquert die Alpen",
     "path": "bildanalyse/napoleon",
-    "imageUrl": "napoleon-1801.jpg",
+    "imageUrl": "assets/images/napoleon-1801.jpg",
     "year": 1801,
     "tags": ["NEUZEIT", "FRANKREICH", "MACHTBILD"],
     "focusTag": "MACHTBILD",
@@ -25,12 +21,25 @@ const PAGES_DATA: PageEntry[] = [
     "shortText": "Napoleon als strahlender Held auf einem Pferd – Inszenierung oder Wahrheit?"
   },
   {
+    "id": "freiheit-1830",
+    "title": "Die Freiheit führt das Volk",
+    "subtitle": "Eugène Delacroix • 1830",
+    "description": "Die Freiheit führt das Volk",
+    "path": "bildanalyse/freiheit",
+    "imageUrl": "assets/images/freiheit-1830.jpg",
+    "year": 1830,
+    "tags": ["REVOLUTION", "19. JHD.", "FRANKREICH"],
+    "focusTag": "SYMBOLBILD",
+    "difficulty": 2,
+    "shortText": "Das berühmteste Gemälde zur Julirevolution. Wer ist die Frau in der Mitte?"
+  },
+  {
     "id": "che-portraet-1960",
     "title": "Che Guevara – Bild als Symbol",
     "subtitle": "Alberto Korda • 1960",
     "description": "Guerillero Heroico – Vom Foto zur Weltikone",
     "path": "bildanalyse/che",
-    "imageUrl": "che-portraet.jpg",
+    "imageUrl": "assets/images/che-portraet.jpg",
     "year": 1960,
     "tags": ["KALTER KRIEG", "REVOLUTION", "IKONE"],
     "focusTag": "SYMBOLBILD",
@@ -38,30 +47,30 @@ const PAGES_DATA: PageEntry[] = [
     "shortText": "Das berühmteste Porträt der Welt. Aber wer war der Mann wirklich?"
   },
   {
+    "id": "patterson-gimlin-1967",
+    "title": "Patterson–Gimlin-Film (1967) – Bigfoot-Debatte",
+    "subtitle": "Patterson & Gimlin • 1967",
+    "description": "Standbild aus dem berühmten Bigfoot-Film",
+    "path": "bildanalyse/bigfoot",
+    "imageUrl": "assets/images/patterson-gimlin-1967.jpg",
+    "year": 1967,
+    "tags": ["MYTHOS", "MEDIENKRITIK", "USA"],
+    "focusTag": "QUELLENKRITIK",
+    "difficulty": 2,
+    "shortText": "Echter Beweis für ein Monster oder ein genialer Hoax im Kostüm?"
+  },
+  {
     "id": "napalm-1972",
     "title": "Angst und Flucht im Vietnamkrieg",
     "subtitle": "Nick Út • 1972",
     "description": "Napalm-Angriff 1972",
     "path": "bildanalyse/napalm",
-    "imageUrl": "napalm1972.jpg",
+    "imageUrl": "assets/images/napalm1972.jpg",
     "year": 1972,
     "tags": ["MODERNE", "VIETNAM", "KRIEG"],
     "focusTag": "KRIEG & MEDIEN",
     "difficulty": 2,
     "shortText": "Ein Foto, das die Welt veränderte. Doch darf man das Leid von Kindern so zeigen?"
-  },
-  {
-    "id": "freiheit-1830",
-    "title": "Die Freiheit führt das Volk",
-    "subtitle": "Eugène Delacroix • 1830",
-    "description": "Die Freiheit führt das Volk",
-    "path": "bildanalyse/freiheit",
-    "imageUrl": "freiheit-1830.jpg",
-    "year": 1830,
-    "tags": ["REVOLUTION", "19. JHD.", "FRANKREICH"],
-    "focusTag": "SYMBOLBILD",
-    "difficulty": 2,
-    "shortText": "Das berühmteste Gemälde zur Julirevolution. Wer ist die Frau in der Mitte?"
   }
 ];
 
@@ -84,7 +93,7 @@ const CheckpointOverlay: React.FC<{
   };
 
   return (
-    <div className="fixed inset-0 z-[300] bg-slate-950/90 backdrop-blur-xl flex items-center justify-center p-4 animate-in fade-in duration-300">
+    <div className="fixed inset-0 z-[400] bg-slate-950/90 backdrop-blur-xl flex items-center justify-center p-4 animate-in fade-in duration-300">
       <div className={`max-w-xl w-full bg-white rounded-[2.5rem] p-8 md:p-12 shadow-2xl transition-all ${status === 'wrong' ? 'animate-shake border-4 border-red-500' : 'border-4 border-transparent'}`}>
         <div className="text-center space-y-4 mb-10">
           <span className={`bg-emerald-100 text-emerald-600 px-5 py-2 rounded-full font-black text-[10px] uppercase tracking-widest`}>Wissens-Check</span>
@@ -241,15 +250,14 @@ const BildanalyseApp: React.FC<{ onBack: () => void, page: PageEntry }> = ({ onB
   };
 
   const registryEntry = CONTENT_REGISTRY[page.id];
-  const isNap = page.path.includes('napoleon');
-  const isChe = page.path.includes('che');
-  let steps: FreiheitData.AnalysisStep[] = [];
-  let feedback = {};
+  let steps: FreiheitData.AnalysisStep[] = registryEntry?.steps || [];
+  let feedback = registryEntry?.ampelFeedback || {};
   
-  if (registryEntry) { steps = registryEntry.steps; feedback = registryEntry.ampelFeedback; } 
-  else if (isNap) { steps = NapoleonData.NAPOLEON_STEPS; feedback = NapoleonData.AMPEL_FEEDBACK; } 
-  else if (isChe) { steps = CheData.CHE_STEPS; feedback = CheData.AMPEL_FEEDBACK; }
-  else { steps = FreiheitData.STEPS; feedback = FreiheitData.AMPEL_FEEDBACK; }
+  if (steps.length === 0) {
+      // Fallback falls die ID nicht registriert ist
+      steps = FreiheitData.STEPS;
+      feedback = FreiheitData.AMPEL_FEEDBACK;
+  }
   
   const curr = steps[step] || steps[0];
   const activeContent = curr.content[level];
@@ -268,7 +276,8 @@ const BildanalyseApp: React.FC<{ onBack: () => void, page: PageEntry }> = ({ onB
     }
   };
 
-  const isTrafficLightStep = steps[step]?.title === "WAHRHEITSGEHALT" || steps[step]?.title === "QUELLENKRITIK" || steps[step]?.title === "GLAUBWÜRDIGKEIT";
+  const stepTitle = steps[step]?.title?.toUpperCase() || "";
+  const isTrafficLightStep = stepTitle.includes("WAHRHEITSGEHALT") || stepTitle.includes("QUELLENKRITIK") || stepTitle.includes("GLAUBWÜRDIGKEIT");
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans selection:bg-emerald-100 overflow-hidden">
@@ -287,21 +296,23 @@ const BildanalyseApp: React.FC<{ onBack: () => void, page: PageEntry }> = ({ onB
           <div className="max-w-3xl mx-auto space-y-4 md:space-y-6">
             <div className="flex justify-center"><div className="bg-slate-200/50 p-1.5 rounded-2xl flex gap-1">{['level_easy', 'level_medium', 'level_hard'].map((l) => (<button key={l} onClick={() => setLevel(l as any)} className={`px-3 md:px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${level === l ? 'bg-white shadow-md text-emerald-600' : 'text-slate-500 hover:text-slate-700'}`}>{l === 'level_easy' ? 'Easy' : l === 'level_medium' ? 'Normal' : 'Pro'}</button>))}</div></div>
             
-            {/* Bild-Header: Das reale Bild wird nun klein aber klar angezeigt */}
             <div className="bg-slate-900 rounded-[2rem] p-4 md:p-6 text-center relative overflow-hidden h-44 md:h-64 flex flex-col justify-center border-b-4 border-slate-950 shadow-2xl group">
-              {/* Blur-Hintergrund für Atmosphäre */}
               <img 
                 src={assetUrl(page.imageUrl)} 
                 className="absolute inset-0 w-full h-full object-cover opacity-20 blur-2xl pointer-events-none" 
                 alt="" 
+                onError={() => console.warn("Hintergrundbild Header fehlt:", assetUrl(page.imageUrl))}
               />
               <div className="relative z-10 flex flex-col md:flex-row items-center justify-center gap-6">
-                {/* Reales Vorschaubild */}
-                <div onClick={() => setIsZoomOpen(true)} className="relative cursor-zoom-in group-hover:scale-105 transition-transform duration-500 shadow-2xl rounded-xl border-2 border-white/20 overflow-hidden w-28 h-20 md:w-40 md:h-28 flex-shrink-0">
+                <div onClick={() => setIsZoomOpen(true)} className="relative cursor-zoom-in group-hover:scale-105 transition-transform duration-500 shadow-2xl rounded-xl border-2 border-white/20 overflow-hidden w-28 h-20 md:w-40 md:h-28 flex-shrink-0 bg-slate-800">
                   <img 
                     src={assetUrl(page.imageUrl)} 
                     className={`w-full h-full object-cover ${sensitivity && !isRevealed && sensitivity.classroomOption.defaultPreview === 'blurred' ? 'blur-md' : ''}`}
                     alt={page.title}
+                    onError={(e) => {
+                      console.error("Vorschaubild Header fehlt:", assetUrl(page.imageUrl));
+                      (e.target as HTMLImageElement).src = "https://via.placeholder.com/400x300?text=Bild+fehlt";
+                    }}
                   />
                   <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors flex items-center justify-center">
                     <span className="text-white text-xl">🔍</span>
@@ -316,54 +327,54 @@ const BildanalyseApp: React.FC<{ onBack: () => void, page: PageEntry }> = ({ onB
               </div>
             </div>
 
-            {sensitivity && !isRevealed ? (
-              <div className="bg-white rounded-[2rem] p-6 md:p-16 border-2 border-slate-100 text-center space-y-8 shadow-2xl mt-4 animate-in zoom-in-95">
-                <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto text-3xl">⚠️</div>
-                <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">{isChe ? "Politisch aufgeladen" : "Sensitiver Inhalt"}</h3>
-                <p className="text-slate-500 font-medium italic">{sensitivity.warning}</p>
-                <button onClick={() => setIsRevealed(true)} className="w-full bg-emerald-600 text-white py-5 rounded-2xl font-black uppercase shadow-xl hover:bg-emerald-700">{sensitivity.classroomOption.revealButtonText}</button>
-              </div>
-            ) : (
-              <>
-                <p className="text-base md:text-xl font-black text-slate-800 text-center leading-snug px-4">{activeContent.description}</p>
-                {activeContent.contextText && (<div className="p-5 md:p-6 bg-sky-900 text-sky-100 rounded-[1.5rem] shadow-xl border-l-8 border-emerald-500 italic"><InteractiveText text={activeContent.contextText} className="text-sm md:text-base italic leading-relaxed" /></div>)}
-                <div className="grid gap-3">{activeContent.points.map((p, i) => (<div key={i} className="flex gap-4 items-start bg-white p-4 md:p-6 rounded-[1.2rem] border border-slate-100 hover:border-emerald-200 transition-all shadow-sm group"><span className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-slate-50 border-2 border-slate-100 flex items-center justify-center font-black text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-all text-xs">{i + 1}</span><InteractiveText text={p} className="text-sm md:text-lg font-bold text-slate-700 leading-tight pt-1" /></div>))}</div>
-
-                {/* Ampel Interaktion */}
-                {isTrafficLightStep && (
-                  <div className="bg-slate-900 rounded-[2.5rem] p-6 md:p-10 text-center border-b-8 border-slate-950 shadow-2xl space-y-8">
-                     <h4 className="text-white font-black uppercase text-[10px] tracking-widest opacity-60 italic">Glaubwürdigkeits-Bewertung</h4>
-                     <div className="flex justify-center gap-6 md:gap-10">
-                        {['red', 'yellow', 'green'].map((color) => (
-                          <button key={color} onClick={() => setAmpel(color)} className={`w-12 h-12 md:w-20 md:h-20 rounded-full border-[4px] md:border-[6px] transition-all active:scale-75 ${color === 'red' ? 'bg-red-600' : color === 'yellow' ? 'bg-yellow-400' : 'bg-green-500'} ${ampel === color ? 'border-white scale-125 shadow-[0_0_30px_rgba(255,255,255,0.3)]' : 'border-black/30 opacity-30 grayscale'}`} />
-                        ))}
-                     </div>
-                     {ampel && (
-                        <div className={`mt-8 p-4 bg-slate-800 rounded-xl font-bold text-xs md:text-sm text-slate-300 italic animate-in zoom-in-95 duration-300 ${
-                          (feedback as any)[ampel].includes('RICHTIG') ? 'border-green-500 text-green-100' :
-                          (feedback as any)[ampel].includes('TEILWEISE') ? 'border-yellow-500 text-yellow-100' :
-                          'border-red-500 text-red-100'
-                        }`}>
-                          { (feedback as any)[ampel] }
-                        </div>
-                      )}
-                  </div>
-                )}
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                   <div className="space-y-2"><button onClick={() => setShowHints(!showHints)} className="w-full bg-slate-900 text-white rounded-[1.2rem] p-4 flex justify-between items-center hover:bg-slate-800 shadow-lg border-b-4 border-black"><span className="font-black uppercase text-[10px] tracking-widest flex items-center gap-3">🔍 Tipps</span><span className={`transition-transform ${showHints ? 'rotate-180' : ''}`}>▼</span></button>{showHints && (<div className="bg-amber-50 rounded-[1.2rem] p-4 border-2 border-amber-100 space-y-2 animate-in slide-in-from-top-4">{activeContent.hints.map((h, i) => <div key={i} className="bg-white p-3 rounded-lg text-[10px] text-slate-600 italic border border-amber-50">★ {h}</div>)}</div>)}</div>
-                   <div className="space-y-2"><button onClick={() => setShowWritingHelp(!showWritingHelp)} className="w-full bg-emerald-600 text-white rounded-[1.2rem] p-4 flex justify-between items-center hover:bg-emerald-700 shadow-lg border-b-4 border-emerald-900"><span className="font-black uppercase text-[10px] tracking-widest flex items-center gap-3">💡 Schreibhilfe</span><span className={`transition-transform ${showWritingHelp ? 'rotate-180' : ''}`}>▼</span></button>{showWritingHelp && (<div className="bg-emerald-50 rounded-[1.2rem] p-4 border-2 border-emerald-100 space-y-2 animate-in slide-in-from-top-4"><p className="text-[9px] font-black uppercase text-emerald-400 mb-2">Satzanfang anklicken:</p><div className="flex flex-wrap gap-2">{activeContent.sentenceStarters.map((s, i) => (<button key={i} onClick={() => handleAddStarter(s)} className="bg-white px-2 py-1.5 rounded-lg text-[9px] text-emerald-900 font-bold italic border border-emerald-100 hover:bg-emerald-600 hover:text-white transition-all shadow-sm">„{s}“</button>))}</div></div>)}</div>
+            {sensitivity && !isRevealed && (
+              <div className="bg-white rounded-[1.5rem] p-6 border-2 border-amber-200 text-center space-y-4 shadow-lg animate-in fade-in zoom-in-95">
+                <div className="flex items-center justify-center gap-3">
+                  <span className="text-2xl">⚠️</span>
+                  <h3 className="text-lg font-black text-slate-900 uppercase">Sensitiver Inhalt</h3>
                 </div>
-                <div className="flex justify-between items-center py-6 pb-24"><button disabled={step === 0} onClick={() => { setStep(prev => prev - 1); setShowHints(false); setShowWritingHelp(false); }} className="px-5 py-3 rounded-xl border-2 font-black uppercase text-[9px] text-slate-400 disabled:opacity-0 hover:bg-slate-100 transition-all">Zurück</button><button onClick={handleNextStep} className="px-8 py-4 bg-emerald-600 text-white rounded-xl font-black uppercase text-[9px] shadow-xl hover:bg-emerald-700 active:scale-95 border-b-4 border-emerald-900">{step < steps.length - 1 ? 'Nächster Schritt' : 'Drucken & Fertig'}</button></div>
-              </>
+                <p className="text-slate-500 text-sm italic font-medium">{sensitivity.warning}</p>
+                <button onClick={() => setIsRevealed(true)} className="bg-emerald-600 text-white px-6 py-3 rounded-xl font-black uppercase text-[10px] shadow-md hover:bg-emerald-700 transition-all">{sensitivity.classroomOption.revealButtonText}</button>
+              </div>
             )}
+
+            <div className="space-y-6">
+              <p className="text-base md:text-xl font-black text-slate-800 text-center leading-snug px-4">{activeContent.description}</p>
+              {activeContent.contextText && (<div className="p-5 md:p-6 bg-sky-900 text-sky-100 rounded-[1.5rem] shadow-xl border-l-8 border-emerald-500 italic"><InteractiveText text={activeContent.contextText} className="text-sm md:text-base italic leading-relaxed" /></div>)}
+              <div className="grid gap-3">{activeContent.points.map((p, i) => (<div key={i} className="flex gap-4 items-start bg-white p-4 md:p-6 rounded-[1.2rem] border border-slate-100 hover:border-emerald-200 transition-all shadow-sm group"><span className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-slate-50 border-2 border-slate-100 flex items-center justify-center font-black text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-all text-xs">{i + 1}</span><InteractiveText text={p} className="text-sm md:text-lg font-bold text-slate-700 leading-tight pt-1" /></div>))}</div>
+
+              {isTrafficLightStep && (
+                <div className="bg-slate-900 rounded-[2.5rem] p-6 md:p-10 text-center border-b-8 border-slate-950 shadow-2xl space-y-8 animate-in slide-in-from-bottom-6">
+                   <h4 className="text-white font-black uppercase text-[10px] tracking-widest opacity-60 italic">Glaubwürdigkeits-Bewertung</h4>
+                   <div className="flex justify-center gap-6 md:gap-10">
+                      {['red', 'yellow', 'green'].map((color) => (
+                        <button key={color} onClick={() => setAmpel(color)} className={`w-12 h-12 md:w-20 md:h-20 rounded-full border-[4px] md:border-[6px] transition-all active:scale-75 ${color === 'red' ? 'bg-red-600' : color === 'yellow' ? 'bg-yellow-400' : 'bg-green-500'} ${ampel === color ? 'border-white scale-125 shadow-[0_0_30px_rgba(255,255,255,0.3)]' : 'border-black/30 opacity-30 grayscale'}`} />
+                      ))}
+                   </div>
+                   {ampel && (
+                      <div className={`mt-8 p-4 bg-slate-800 rounded-xl font-bold text-xs md:text-sm text-slate-300 italic animate-in zoom-in-95 duration-300 border-l-4 ${
+                        (feedback as any)[ampel]?.includes('RICHTIG') ? 'border-green-500 text-green-100' :
+                        (feedback as any)[ampel]?.includes('TEILWEISE') ? 'border-yellow-500 text-yellow-100' :
+                        'border-red-500 text-red-100'
+                      }`}>
+                        { (feedback as any)[ampel] || "Kein Feedback verfügbar." }
+                      </div>
+                    )}
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                 <div className="space-y-2"><button onClick={() => setShowHints(!showHints)} className="w-full bg-slate-900 text-white rounded-[1.2rem] p-4 flex justify-between items-center hover:bg-slate-800 shadow-lg border-b-4 border-black"><span className="font-black uppercase text-[10px] tracking-widest flex items-center gap-3">🔍 Tipps</span><span className={`transition-transform ${showHints ? 'rotate-180' : ''}`}>▼</span></button>{showHints && (<div className="bg-amber-50 rounded-[1.2rem] p-4 border-2 border-amber-100 space-y-2 animate-in slide-in-from-top-4">{activeContent.hints.map((h, i) => <div key={i} className="bg-white p-3 rounded-lg text-[10px] text-slate-600 italic border border-amber-50">★ {h}</div>)}</div>)}</div>
+                 <div className="space-y-2"><button onClick={() => setShowWritingHelp(!showWritingHelp)} className="w-full bg-emerald-600 text-white rounded-[1.2rem] p-4 flex justify-between items-center hover:bg-emerald-700 shadow-lg border-b-4 border-emerald-900"><span className="font-black uppercase text-[10px] tracking-widest flex items-center gap-3">💡 Schreibhilfe</span><span className={`transition-transform ${showWritingHelp ? 'rotate-180' : ''}`}>▼</span></button>{showWritingHelp && (<div className="bg-emerald-50 rounded-[1.2rem] p-4 border-2 border-emerald-100 space-y-2 animate-in slide-in-from-top-4"><p className="text-[9px] font-black uppercase text-emerald-400 mb-2">Satzanfang anklicken:</p><div className="flex flex-wrap gap-2">{activeContent.sentenceStarters.map((s, i) => (<button key={i} onClick={() => handleAddStarter(s)} className="bg-white px-2 py-1.5 rounded-lg text-[9px] text-emerald-900 font-bold italic border border-emerald-100 hover:bg-emerald-600 hover:text-white transition-all shadow-sm">„{s}“</button>))}</div></div>)}</div>
+              </div>
+              <div className="flex justify-between items-center py-6 pb-24"><button disabled={step === 0} onClick={() => { setStep(prev => prev - 1); setShowHints(false); setShowWritingHelp(false); }} className="px-5 py-3 rounded-xl border-2 font-black uppercase text-[9px] text-slate-400 disabled:opacity-0 hover:bg-slate-100 transition-all">Zurück</button><button onClick={handleNextStep} className="px-8 py-4 bg-emerald-600 text-white rounded-xl font-black uppercase text-[9px] shadow-xl hover:bg-emerald-700 active:scale-95 border-b-4 border-emerald-900">{step < steps.length - 1 ? 'Nächster Schritt' : 'Drucken & Fertig'}</button></div>
+            </div>
           </div>
         </main>
 
-        <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className={`no-print fixed bottom-6 right-6 md:static z-[200] bg-slate-900 text-white w-14 h-14 md:w-10 md:h-auto md:py-8 md:px-1 rounded-full md:rounded-l-2xl shadow-2xl transition-all duration-300 hover:bg-emerald-600 flex flex-col items-center justify-center gap-4 ${isSidebarOpen ? 'md:translate-x-full opacity-0' : ''}`}><span className="text-xl">📝</span><span className="hidden md:block [writing-mode:vertical-lr] font-black uppercase text-[10px] tracking-widest rotate-180">Notizen</span></button>
+        <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className={`no-print fixed bottom-6 right-6 md:static z-[300] bg-slate-900 text-white w-14 h-14 md:w-10 md:h-auto md:py-8 md:px-1 rounded-full md:rounded-l-2xl shadow-2xl transition-all duration-300 hover:bg-emerald-600 flex flex-col items-center justify-center gap-4 ${isSidebarOpen ? 'md:translate-x-full opacity-0' : ''}`}><span className="text-xl">📝</span><span className="hidden md:block [writing-mode:vertical-lr] font-black uppercase text-[10px] tracking-widest rotate-180">Notizen</span></button>
         
-        {/* Sidebar mit sehr hohem Z-Index, um über dem Zoom-Modal zu bleiben */}
-        <aside className={`fixed inset-y-0 right-0 md:static bg-white border-l shadow-2xl transition-all duration-500 z-[250] flex flex-col h-full ${isSidebarOpen ? 'w-full md:w-[400px]' : 'w-0 translate-x-full opacity-0 pointer-events-none'}`}>
+        <aside className={`fixed inset-y-0 right-0 md:static bg-white border-l shadow-2xl transition-all duration-500 z-[350] flex flex-col h-full ${isSidebarOpen ? 'w-full md:w-[400px]' : 'w-0 translate-x-full opacity-0 pointer-events-none'}`}>
           <div className="p-4 border-b flex justify-between items-center bg-slate-50/50"><h3 className="font-black uppercase text-[10px] tracking-widest text-slate-900 flex items-center gap-3"><span className="bg-slate-900 text-white p-2 rounded-lg text-sm">📝</span> Notizen • Schritt {step+1}</h3><button onClick={() => setIsSidebarOpen(false)} className="text-slate-400 hover:text-slate-900 p-2 text-2xl">✕</button></div>
           <div className="flex-1 overflow-y-auto p-4 space-y-6"><div className="bg-yellow-50 rounded-[1.5rem] p-5 border-2 border-yellow-100 shadow-inner flex flex-col min-h-[300px]"><textarea value={userNotes[step] || ""} onChange={(e) => updateNote(e.target.value)} placeholder={`Erkenntnisse hier festhalten...`} className="w-full flex-grow bg-transparent border-none focus:ring-0 text-slate-800 font-bold text-base md:text-lg resize-none placeholder:text-yellow-600/30 leading-relaxed custom-scrollbar" style={{ backgroundImage: 'linear-gradient(transparent, transparent 31px, #e5e7eb 31px)', backgroundSize: '100% 32px', lineHeight: '32px' }} /></div>
             
@@ -391,7 +402,7 @@ const BildanalyseApp: React.FC<{ onBack: () => void, page: PageEntry }> = ({ onB
       {isZoomOpen && <ZoomModal imageUrl={page.imageUrl} onClose={() => setIsZoomOpen(false)} />}
       {activeCheckpoint && <CheckpointOverlay checkpoint={activeCheckpoint} onSuccess={goToNext} onClose={() => setActiveCheckpoint(null)} />}
 
-      <div className="hidden print:block">
+      <div className="hidden print:block absolute inset-0 bg-white">
         <Infographic ampelChoice={ampel as any} steps={steps as any} level={level} title={page.title} artist={page.subtitle} year={page.year.toString()} imageUrl={page.imageUrl} feedback={feedback as any} userNotes={userNotes} />
       </div>
     </div>
