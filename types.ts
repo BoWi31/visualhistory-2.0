@@ -1,5 +1,3 @@
-import { assetUrl as utilsAssetUrl } from './utils/assetUrl';
-
 export interface PageEntry {
   id: string;
   title: string;
@@ -29,5 +27,8 @@ export interface ConfigData {
 export const assetUrl = (file: string): string => {
   if (!file) return '';
   if (file.startsWith('http') || file.startsWith('data:')) return file;
-  return utilsAssetUrl(file);
+  
+  const baseUrl = import.meta.env.BASE_URL || '/';
+  const cleanFile = file.startsWith('/') ? file.slice(1) : file;
+  return `${baseUrl}${cleanFile}`;
 };
