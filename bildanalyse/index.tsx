@@ -233,14 +233,12 @@ const App: React.FC = () => {
 
       <div className="hidden print:block absolute inset-0 bg-white">
         <Infographic 
-          ampelChoice={ampelChoice} 
           steps={STEPS} 
           level={level}
           title="Die Freiheit führt das Volk" 
           artist="Eugène Delacroix" 
           year="1830" 
           imageUrl={assetUrl(paintingUrl)} 
-          feedback={AMPEL_FEEDBACK} 
         />
       </div>
     </div>
