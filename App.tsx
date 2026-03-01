@@ -62,6 +62,19 @@ const PAGES_DATA: PageEntry[] = [
     "focusTag": "SYMBOLBILD",
     "difficulty": 2,
     "shortText": "Das berühmteste Gemälde zur Julirevolution. Wer ist die Frau in der Mitte?"
+  },
+  {
+    "id": "hitler-kaernten-1939",
+    "title": "Hitler im Kreise von Verehrerinnen",
+    "subtitle": "Heinrich Hoffmann • 1939",
+    "description": "NS-Propaganda und Personenkult",
+    "path": "bildanalyse/hitler-kaernten-1939",
+    "imageUrl": "hitler-kaernten-1939.jpg",
+    "year": 1939,
+    "tags": ["NS", "Propaganda", "Personenkult", "Quellenkritik", "Bildwirkung"],
+    "focusTag": "PROPAGANDA",
+    "difficulty": 2,
+    "shortText": "Ein scheinbar harmloses Foto von 1939. Doch was verrät es uns über die Macht der Bilder?"
   }
 ];
 
