@@ -1,3 +1,5 @@
+import { assetUrl as utilsAssetUrl } from './utils/assetUrl';
+
 export interface PageEntry {
   id: string;
   title: string;
@@ -21,19 +23,11 @@ export interface ConfigData {
 }
 
 /**
- * Erzeugt eine robuste URL für statische Assets.
- * Geht davon aus, dass die Dateien im Root des Deployments (public Ordner im Build) liegen.
+ * Erzeugt eine robuste URL für statische Assets aus dem /public Verzeichnis.
+ * Nutzt import.meta.env.BASE_URL für korrekte Pfade auch in Unterverzeichnissen.
  */
 export const assetUrl = (file: string): string => {
   if (!file) return '';
-  // Falls es bereits eine absolute URL ist, nichts tun
   if (file.startsWith('http') || file.startsWith('data:')) return file;
-  
-  // Dateiname bereinigen (Pfad-Präfixe wie ./ oder / entfernen)
-  const fileName = file.split('/').pop() || file;
-  
-  // Base URL von Vite oder Standard-Root /
-  const baseUrl = (window as any).importMetaBaseUrl || '/';
-  
-  return `${baseUrl}${fileName}`;
+  return utilsAssetUrl(file);
 };
