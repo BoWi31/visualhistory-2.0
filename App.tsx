@@ -69,7 +69,7 @@ const PAGES_DATA: PageEntry[] = [
     "subtitle": "Heinrich Hoffmann • 1939",
     "description": "NS-Propaganda und Personenkult",
     "path": "bildanalyse/hitler-kaernten-1939",
-    "imageUrl": "hitler-kaernten-1939.jpg",
+    "imageUrl": "hitler1939.jpg",
     "year": 1939,
     "tags": ["NS", "Propaganda", "Personenkult", "Quellenkritik", "Bildwirkung"],
     "focusTag": "PROPAGANDA",
@@ -149,7 +149,11 @@ const Timeline: React.FC<{ pages: PageEntry[], onNavigate: (path: string) => voi
                     src={assetUrl(page.imageUrl)} 
                     className={`w-full h-full object-cover rounded-xl ${CONTENT_REGISTRY[page.id]?.sensitivity?.classroomOption.defaultPreview === 'blurred' ? 'blur-md' : ''}`} 
                     alt={page.title} 
-                    onError={() => console.warn("Bild lädt nicht (Timeline):", assetUrl(page.imageUrl))}
+                    onError={() => {
+                      if (page.imageUrl === 'hitler1939.jpg') {
+                        console.warn("Bild lädt nicht (Timeline):", assetUrl(page.imageUrl));
+                      }
+                    }}
                   />
                 </div>
                 <div className="w-4 h-4 bg-emerald-600 rounded-full border-4 border-white mt-1 shadow-md"></div>
@@ -213,7 +217,11 @@ const ZoomModal: React.FC<{ imageUrl: string, onClose: () => void }> = ({ imageU
           className="max-w-full max-h-full object-contain transition-transform duration-200 select-none shadow-2xl" 
           style={{ transform: `translate(${position.x}px, ${position.y}px) scale(${zoom})` }} 
           alt="Analysebild Zoom" 
-          onError={() => console.warn("Bild lädt nicht (ZoomModal):", assetUrl(imageUrl))}
+          onError={() => {
+            if (imageUrl === 'hitler1939.jpg') {
+              console.warn("Bild lädt nicht (Zoom):", assetUrl(imageUrl));
+            }
+          }}
         />
       </div>
     </div>
@@ -315,6 +323,11 @@ const BildanalyseApp: React.FC<{ onBack: () => void, page: PageEntry }> = ({ onB
                     src={assetUrl(page.imageUrl)} 
                     className={`w-full h-full object-cover ${sensitivity && !isRevealed && sensitivity.classroomOption.defaultPreview === 'blurred' ? 'blur-md' : ''}`}
                     alt={page.title}
+                    onError={() => {
+                      if (page.imageUrl === 'hitler1939.jpg') {
+                        console.warn("Bild lädt nicht (Detail):", assetUrl(page.imageUrl));
+                      }
+                    }}
                   />
                   <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors flex items-center justify-center">
                     <span className="text-white text-xl">🔍</span>
@@ -440,7 +453,9 @@ const App: React.FC = () => {
                       src={assetUrl(p.imageUrl)} 
                       className={`w-full h-full object-cover grayscale-0 md:grayscale group-hover:grayscale-0 transition-all duration-1000 opacity-95 group-hover:scale-110 ${isBlurred ? 'blur-2xl' : ''}`} 
                       alt={p.title} 
-                      onError={() => console.warn("Bild lädt nicht (Gallery):", assetUrl(p.imageUrl))}
+                      onError={() => {
+                        console.warn("Bild lädt nicht (Gallery):", assetUrl(p.imageUrl));
+                      }}
                     />
                     {isBlurred && (
                       <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/20 backdrop-blur-sm pointer-events-none group-hover:opacity-0 transition-opacity duration-500">
