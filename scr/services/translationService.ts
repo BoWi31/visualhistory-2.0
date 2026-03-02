@@ -1,7 +1,5 @@
 import { GoogleGenAI } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
-
 export type Language = 'de' | 'en' | 'ru' | 'sq';
 
 export const LANGUAGES: Record<Language, { label: string, flag: string }> = {
@@ -11,10 +9,32 @@ export const LANGUAGES: Record<Language, { label: string, flag: string }> = {
   sq: { label: 'Shqip', flag: '🇦🇱' }
 };
 
+let aiInstance: GoogleGenAI | null = null;
+
+function getAI() {
+  if (!aiInstance) {
+    let apiKey = "";
+    try {
+      // @ts-ignore
+      apiKey = (typeof process !== 'undefined' && process.env && process.env.GEMINI_API_KEY) || "";
+    } catch (e) {
+      console.warn("Could not access process.env.GEMINI_API_KEY");
+    }
+    
+    if (!apiKey) {
+      throw new Error("GEMINI_API_KEY is missing. Please configure it in the environment.");
+    }
+    
+    aiInstance = new GoogleGenAI({ apiKey });
+  }
+  return aiInstance;
+}
+
 export async function translateText(text: string, targetLang: Language): Promise<string> {
   if (targetLang === 'de' || !text) return text;
 
   try {
+    const ai = getAI();
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
       contents: `Translate the following German text to ${LANGUAGES[targetLang].label}. Keep the tone educational and formal. Maintain any special formatting like [[word|explanation]].\n\nText: ${text}`,
@@ -31,6 +51,7 @@ export async function translateObject<T>(obj: T, targetLang: Language): Promise<
 
   const jsonString = JSON.stringify(obj);
   try {
+    const ai = getAI();
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
       contents: `Translate the following JSON object values from German to ${LANGUAGES[targetLang].label}. 
