@@ -1,6 +1,7 @@
 import React from 'react';
 import { assetUrl } from '../../types';
 import { AnalysisStep } from '../freiheitfuehrtvolk';
+import { Language } from '../../src/services/translationService';
 
 interface InfographicProps {
   steps?: AnalysisStep[];
@@ -10,7 +11,15 @@ interface InfographicProps {
   year?: string;
   imageUrl?: string;
   userNotes?: Record<number, string>;
+  lang?: Language;
 }
+
+const LABELS: Record<Language, any> = {
+  de: { protocol: 'Bildanalyse Protokoll', level: 'Niveau', name: 'Name', class: 'Klasse', date: 'Datum', noNotes: 'Keine Notizen zu diesem Analyseschritt...' },
+  en: { protocol: 'Image Analysis Protocol', level: 'Level', name: 'Name', class: 'Class', date: 'Date', noNotes: 'No notes for this analysis step...' },
+  ru: { protocol: 'Протокол анализа изображений', level: 'Уровень', name: 'Имя', class: 'Класс', date: 'Дата', noNotes: 'Нет заметок для этого этапа анализа...' },
+  sq: { protocol: 'Protokolli i Analizës së Imazhit', level: 'Niveli', name: 'Emri', class: 'Klasa', date: 'Data', noNotes: 'Nuk ka shënime për këtë hap të analizës...' }
+};
 
 export const Infographic: React.FC<InfographicProps> = ({ 
   steps = [], 
@@ -19,8 +28,10 @@ export const Infographic: React.FC<InfographicProps> = ({
   artist = "Unbekannter Künstler", 
   year = "o.D.", 
   imageUrl = "", 
-  userNotes = {}
+  userNotes = {},
+  lang = 'de'
 }) => {
+  const l = LABELS[lang] || LABELS.de;
   return (
     <div className="bg-white p-10 max-w-[210mm] mx-auto min-h-[297mm] flex flex-col gap-8 text-slate-900 font-sans print:m-0 print:p-10 print:w-full print:h-screen print:overflow-hidden">
       <style dangerouslySetInnerHTML={{ __html: `
@@ -49,8 +60,8 @@ export const Infographic: React.FC<InfographicProps> = ({
           <h1 className="text-4xl font-black uppercase tracking-tighter leading-tight mb-2">{title}</h1>
           <p className="text-xl font-bold text-slate-500 italic">{artist} • {year}</p>
           <div className="mt-4 flex gap-4">
-             <span className="bg-slate-900 text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest">Bildanalyse Protokoll</span>
-             <span className="border-2 border-slate-200 text-slate-400 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest">Niveau: {level === 'level_easy' ? 'Easy' : level === 'level_medium' ? 'Normal' : 'Pro'}</span>
+             <span className="bg-slate-900 text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest">{l.protocol}</span>
+             <span className="border-2 border-slate-200 text-slate-400 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest">{l.level}: {level === 'level_easy' ? 'Easy' : level === 'level_medium' ? 'Normal' : 'Pro'}</span>
           </div>
         </div>
       </div>
@@ -64,7 +75,7 @@ export const Infographic: React.FC<InfographicProps> = ({
               <h3 className="text-xs font-black uppercase tracking-[0.3em] text-slate-900">{s.title}</h3>
             </div>
             <div className="flex-1 text-sm leading-relaxed italic text-slate-700 font-medium whitespace-pre-wrap">
-              {userNotes[idx] ? userNotes[idx] : <span className="opacity-20 italic text-slate-300">Keine Notizen zu diesem Analyseschritt...</span>}
+              {userNotes[idx] ? userNotes[idx] : <span className="opacity-20 italic text-slate-300">{l.noNotes}</span>}
             </div>
           </div>
         ))}
@@ -73,9 +84,9 @@ export const Infographic: React.FC<InfographicProps> = ({
       {/* Footer */}
       <div className="pt-8 border-t-2 border-slate-100 flex justify-between items-center">
         <div className="flex gap-10 text-[10px] font-black uppercase tracking-widest text-slate-400">
-          <p>Name: _________________________________</p>
-          <p>Klasse: ___________</p>
-          <p>Datum: {new Date().toLocaleDateString('de-DE')}</p>
+          <p>{l.name}: _________________________________</p>
+          <p>{l.class}: ___________</p>
+          <p>{l.date}: {new Date().toLocaleDateString(lang === 'de' ? 'de-DE' : lang === 'en' ? 'en-US' : lang === 'ru' ? 'ru-RU' : 'sq-AL')}</p>
         </div>
         <p className="text-[10px] font-black uppercase tracking-widest text-slate-200">Visual History v2.5</p>
       </div>
