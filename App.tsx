@@ -342,7 +342,7 @@ const BildanalyseApp: React.FC<{ onBack: () => void, page: PageEntry }> = ({ onB
               </div>
             </div>
 
-            {sensitivity && !isRevealed ? (
+            {sensitivity && sensitivity.classroomOption.defaultPreview === 'blurred' && !isRevealed ? (
               <div className="bg-white rounded-[2rem] p-6 md:p-16 border-2 border-slate-100 text-center space-y-8 shadow-2xl mt-4 animate-in zoom-in-95">
                 <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto text-3xl">⚠️</div>
                 <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">{isChe ? "Politisch aufgeladen" : "Sensitiver Inhalt"}</h3>
