@@ -29,6 +29,16 @@ export const assetUrl = (file: string): string => {
   if (file.startsWith('http') || file.startsWith('data:')) return file;
   
   const baseUrl = import.meta.env.BASE_URL || '/';
-  const cleanFile = file.startsWith('/') ? file.slice(1) : file;
-  return `${baseUrl}${cleanFile}`;
+  // Entferne führende ./ oder /
+  let cleanFile = file;
+  if (cleanFile.startsWith('./')) {
+    cleanFile = cleanFile.slice(2);
+  }
+  if (cleanFile.startsWith('/')) {
+    cleanFile = cleanFile.slice(1);
+  }
+  
+  // Sicherstellen, dass baseUrl mit / endet und cleanFile nicht mit / beginnt
+  const normalizedBase = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
+  return `${normalizedBase}${cleanFile}`;
 };
