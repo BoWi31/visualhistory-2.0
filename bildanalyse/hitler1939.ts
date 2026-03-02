@@ -171,7 +171,7 @@ export const HITLER_1939_STEPS: AnalysisStep[] = [
 export const SENSITIVITY = {
   warning: "Dieses Foto kann Propaganda sein. Wir arbeiten sachlich und kritisch.",
   classroomOption: {
-    defaultPreview: "blurred",
+    defaultPreview: "visible",
     revealButtonText: "Bild kritisch betrachten",
     alternativeTask: "Analysiere die Bildbeschreibung."
   }
