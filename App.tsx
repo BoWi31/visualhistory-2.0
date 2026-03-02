@@ -5,6 +5,7 @@ import * as NapoleonData from './bildanalyse/napoleon';
 import * as CheData from './bildanalyse/che';
 import { CONTENT_REGISTRY } from './analysisContent';
 import { Infographic } from './bildanalyse/components/Infographic';
+import { Language, LANGUAGES, translateObject } from './src/services/translationService';
 
 // BoWi Design-Konstanten
 const BOWI_GREEN = "emerald-600";
@@ -228,7 +229,36 @@ const ZoomModal: React.FC<{ imageUrl: string, onClose: () => void }> = ({ imageU
   );
 };
 
-const BildanalyseApp: React.FC<{ onBack: () => void, page: PageEntry }> = ({ onBack, page }) => {
+const LanguageSelector: React.FC<{ current: Language, onChange: (l: Language) => void }> = ({ current, onChange }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  return (
+    <div className="relative no-print">
+      <button 
+        onClick={() => setIsOpen(!isOpen)} 
+        className="flex items-center gap-2 bg-white/90 backdrop-blur-md border border-slate-200 px-3 py-2 rounded-xl shadow-sm hover:bg-slate-50 transition-all font-bold text-xs"
+      >
+        <span>{LANGUAGES[current].flag}</span>
+        <span className="hidden md:block">{LANGUAGES[current].label}</span>
+      </button>
+      {isOpen && (
+        <div className="absolute right-0 mt-2 w-40 bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden z-[500] animate-in fade-in slide-in-from-top-2">
+          {(Object.keys(LANGUAGES) as Language[]).map((lang) => (
+            <button 
+              key={lang} 
+              onClick={() => { onChange(lang); setIsOpen(false); }}
+              className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-slate-50 transition-colors text-xs font-bold ${current === lang ? 'text-emerald-600 bg-emerald-50/50' : 'text-slate-600'}`}
+            >
+              <span>{LANGUAGES[lang].flag}</span>
+              <span>{LANGUAGES[lang].label}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const BildanalyseApp: React.FC<{ onBack: () => void, page: PageEntry, lang: Language, onLangChange: (l: Language) => void }> = ({ onBack, page, lang, onLangChange }) => {
   const [step, setStep] = useState(0);
   const [level, setLevel] = useState<'level_easy' | 'level_medium' | 'level_hard'>('level_medium');
   const [ampel, setAmpel] = useState<null | string>(null);
@@ -239,6 +269,11 @@ const BildanalyseApp: React.FC<{ onBack: () => void, page: PageEntry }> = ({ onB
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 1024);
   const [activeCheckpoint, setActiveCheckpoint] = useState<FreiheitData.Checkpoint | null>(null);
   const [userNotes, setUserNotes] = useState<Record<number, string>>({});
+  const [translatedContent, setTranslatedContent] = useState<any>(null);
+  const [translatedMeta, setTranslatedMeta] = useState<{ title: string, subtitle: string } | null>(null);
+  const [translatedFeedback, setTranslatedFeedback] = useState<any>(null);
+  const [translatedSteps, setTranslatedSteps] = useState<any[] | null>(null);
+  const [isTranslating, setIsTranslating] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem(`notes_${page.id}`);
@@ -273,8 +308,45 @@ const BildanalyseApp: React.FC<{ onBack: () => void, page: PageEntry }> = ({ onB
   else { steps = FreiheitData.STEPS; feedback = FreiheitData.AMPEL_FEEDBACK; }
   
   const curr = steps[step] || steps[0];
-  const activeContent = curr.content[level];
+  const originalContent = curr.content[level];
   const sensitivity = registryEntry?.sensitivity;
+
+  useEffect(() => {
+    if (lang === 'de') {
+      setTranslatedContent(null);
+      setTranslatedMeta(null);
+      setTranslatedFeedback(null);
+      setTranslatedSteps(null);
+      return;
+    }
+
+    const performTranslation = async () => {
+      setIsTranslating(true);
+      const [tContent, tMeta, tFeedback, tSteps] = await Promise.all([
+        translateObject(originalContent, lang),
+        translateObject({ title: curr.title, subtitle: curr.subtitle }, lang),
+        translateObject(feedback, lang),
+        translateObject(steps.slice(0, 6).map(s => ({ title: s.title })), lang)
+      ]);
+      setTranslatedContent(tContent);
+      setTranslatedMeta(tMeta);
+      setTranslatedFeedback(tFeedback);
+      
+      if (tSteps) {
+        const mergedSteps = steps.map((s, i) => i < 6 ? { ...s, title: tSteps[i].title } : s);
+        setTranslatedSteps(mergedSteps);
+      }
+      
+      setIsTranslating(false);
+    };
+
+    performTranslation();
+  }, [lang, step, level, originalContent, curr.title, curr.subtitle, feedback, steps]);
+
+  const activeContent = translatedContent || originalContent;
+  const activeMeta = translatedMeta || { title: curr.title, subtitle: curr.subtitle };
+  const activeFeedback = translatedFeedback || feedback;
+  const activeSteps = translatedSteps || steps;
 
   const handleNextStep = () => { if (curr.checkpoint) setActiveCheckpoint(curr.checkpoint); else goToNext(); };
   const goToNext = () => {
@@ -294,9 +366,12 @@ const BildanalyseApp: React.FC<{ onBack: () => void, page: PageEntry }> = ({ onB
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans selection:bg-emerald-100 overflow-hidden">
       <nav className="no-print bg-white/80 backdrop-blur-md border-b p-3 md:p-4 flex justify-between items-center z-50 sticky top-0 shadow-sm">
-        <button onClick={onBack} className="bg-slate-900 text-white px-3 md:px-5 py-2 rounded-xl font-black uppercase text-[10px] hover:bg-emerald-600 transition-all shadow-lg">← Galerie</button>
+        <div className="flex items-center gap-4">
+          <button onClick={onBack} className="bg-slate-900 text-white px-3 md:px-5 py-2 rounded-xl font-black uppercase text-[10px] hover:bg-emerald-600 transition-all shadow-lg">← Galerie</button>
+          <LanguageSelector current={lang} onChange={onLangChange} />
+        </div>
         <div className="flex gap-1 md:gap-2">
-          {steps.map((_, i) => (
+          {steps.map((_: any, i: number) => (
             <button key={i} onClick={() => { setStep(i); setShowHints(false); setShowWritingHelp(false); }} className={`w-7 h-7 md:w-11 md:h-11 rounded-xl font-black text-xs transition-all ${step === i ? 'bg-emerald-600 text-white shadow-xl scale-110' : 'bg-slate-100 text-slate-400 hover:bg-slate-200'}`}>{i + 1}</button>
           ))}
         </div>
@@ -306,6 +381,11 @@ const BildanalyseApp: React.FC<{ onBack: () => void, page: PageEntry }> = ({ onB
       <div className="flex flex-1 overflow-hidden relative">
         <main className="no-print flex-1 overflow-y-auto p-4 md:p-10 transition-all duration-500">
           <div className="max-w-3xl mx-auto space-y-4 md:space-y-6">
+            {isTranslating && (
+              <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[100] bg-emerald-600 text-white px-6 py-2 rounded-full shadow-2xl font-black uppercase text-[10px] tracking-widest flex items-center gap-3 animate-bounce">
+                <span className="animate-spin">⏳</span> Übersetze...
+              </div>
+            )}
             <div className="flex justify-center"><div className="bg-slate-200/50 p-1.5 rounded-2xl flex gap-1">{['level_easy', 'level_medium', 'level_hard'].map((l) => (<button key={l} onClick={() => setLevel(l as any)} className={`px-3 md:px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${level === l ? 'bg-white shadow-md text-emerald-600' : 'text-slate-500 hover:text-slate-700'}`}>{l === 'level_easy' ? 'Easy' : l === 'level_medium' ? 'Normal' : 'Pro'}</button>))}</div></div>
             
             {/* Bild-Header: Das reale Bild wird nun klein aber klar angezeigt */}
@@ -336,8 +416,8 @@ const BildanalyseApp: React.FC<{ onBack: () => void, page: PageEntry }> = ({ onB
 
                 <div className="text-center md:text-left space-y-2">
                   <span className="bg-emerald-600 text-[8px] font-black tracking-widest uppercase px-4 py-1.5 rounded-full text-white">SCHRITT {step + 1} VON {steps.length}</span>
-                  <h2 className="text-xl md:text-3xl font-black text-white uppercase tracking-tighter leading-none">{curr.title}</h2>
-                  <p className="text-emerald-400 font-black uppercase text-[10px] md:text-sm italic tracking-widest opacity-80">{curr.subtitle}</p>
+                  <h2 className="text-xl md:text-3xl font-black text-white uppercase tracking-tighter leading-none">{activeMeta.title}</h2>
+                  <p className="text-emerald-400 font-black uppercase text-[10px] md:text-sm italic tracking-widest opacity-80">{activeMeta.subtitle}</p>
                 </div>
               </div>
             </div>
@@ -353,7 +433,7 @@ const BildanalyseApp: React.FC<{ onBack: () => void, page: PageEntry }> = ({ onB
               <>
                 <p className="text-base md:text-xl font-black text-slate-800 text-center leading-snug px-4">{activeContent.description}</p>
                 {activeContent.contextText && (<div className="p-5 md:p-6 bg-sky-900 text-sky-100 rounded-[1.5rem] shadow-xl border-l-8 border-emerald-500 italic"><InteractiveText text={activeContent.contextText} className="text-sm md:text-base italic leading-relaxed" /></div>)}
-                <div className="grid gap-3">{activeContent.points.map((p, i) => (<div key={i} className="flex gap-4 items-start bg-white p-4 md:p-6 rounded-[1.2rem] border border-slate-100 hover:border-emerald-200 transition-all shadow-sm group"><span className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-slate-50 border-2 border-slate-100 flex items-center justify-center font-black text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-all text-xs">{i + 1}</span><InteractiveText text={p} className="text-sm md:text-lg font-bold text-slate-700 leading-tight pt-1" /></div>))}</div>
+                <div className="grid gap-3">{activeContent.points.map((p: string, i: number) => (<div key={i} className="flex gap-4 items-start bg-white p-4 md:p-6 rounded-[1.2rem] border border-slate-100 hover:border-emerald-200 transition-all shadow-sm group"><span className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-slate-50 border-2 border-slate-100 flex items-center justify-center font-black text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-all text-xs">{i + 1}</span><InteractiveText text={p} className="text-sm md:text-lg font-bold text-slate-700 leading-tight pt-1" /></div>))}</div>
 
                 {/* Ampel Interaktion */}
                 {isTrafficLightStep && (
@@ -366,19 +446,19 @@ const BildanalyseApp: React.FC<{ onBack: () => void, page: PageEntry }> = ({ onB
                      </div>
                      {ampel && (
                         <div className={`mt-8 p-4 bg-slate-800 rounded-xl font-bold text-xs md:text-sm text-slate-300 italic animate-in zoom-in-95 duration-300 ${
-                          (feedback as any)[ampel].includes('RICHTIG') ? 'border-green-500 text-green-100' :
-                          (feedback as any)[ampel].includes('TEILWEISE') ? 'border-yellow-500 text-yellow-100' :
+                          (activeFeedback as any)[ampel].includes('RICHTIG') || (activeFeedback as any)[ampel].includes('CORRECT') || (activeFeedback as any)[ampel].includes('SAKTË') || (activeFeedback as any)[ampel].includes('ПРАВИЛЬНО') ? 'border-green-500 text-green-100' :
+                          (activeFeedback as any)[ampel].includes('TEILWEISE') || (activeFeedback as any)[ampel].includes('PARTIALLY') || (activeFeedback as any)[ampel].includes('PJESËRISHT') || (activeFeedback as any)[ampel].includes('ЧАСТИЧНО') ? 'border-yellow-500 text-yellow-100' :
                           'border-red-500 text-red-100'
                         }`}>
-                          { (feedback as any)[ampel] }
+                          { (activeFeedback as any)[ampel] }
                         </div>
                       )}
                   </div>
                 )}
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                   <div className="space-y-2"><button onClick={() => setShowHints(!showHints)} className="w-full bg-slate-900 text-white rounded-[1.2rem] p-4 flex justify-between items-center hover:bg-slate-800 shadow-lg border-b-4 border-black"><span className="font-black uppercase text-[10px] tracking-widest flex items-center gap-3">🔍 Tipps</span><span className={`transition-transform ${showHints ? 'rotate-180' : ''}`}>▼</span></button>{showHints && (<div className="bg-amber-50 rounded-[1.2rem] p-4 border-2 border-amber-100 space-y-2 animate-in slide-in-from-top-4">{activeContent.hints.map((h, i) => <div key={i} className="bg-white p-3 rounded-lg text-[10px] text-slate-600 italic border border-amber-50">★ {h}</div>)}</div>)}</div>
-                   <div className="space-y-2"><button onClick={() => setShowWritingHelp(!showWritingHelp)} className="w-full bg-emerald-600 text-white rounded-[1.2rem] p-4 flex justify-between items-center hover:bg-emerald-700 shadow-lg border-b-4 border-emerald-900"><span className="font-black uppercase text-[10px] tracking-widest flex items-center gap-3">💡 Schreibhilfe</span><span className={`transition-transform ${showWritingHelp ? 'rotate-180' : ''}`}>▼</span></button>{showWritingHelp && (<div className="bg-emerald-50 rounded-[1.2rem] p-4 border-2 border-emerald-100 space-y-2 animate-in slide-in-from-top-4"><p className="text-[9px] font-black uppercase text-emerald-400 mb-2">Satzanfang anklicken:</p><div className="flex flex-wrap gap-2">{activeContent.sentenceStarters.map((s, i) => (<button key={i} onClick={() => handleAddStarter(s)} className="bg-white px-2 py-1.5 rounded-lg text-[9px] text-emerald-900 font-bold italic border border-emerald-100 hover:bg-emerald-600 hover:text-white transition-all shadow-sm">„{s}“</button>))}</div></div>)}</div>
+                   <div className="space-y-2"><button onClick={() => setShowHints(!showHints)} className="w-full bg-slate-900 text-white rounded-[1.2rem] p-4 flex justify-between items-center hover:bg-slate-800 shadow-lg border-b-4 border-black"><span className="font-black uppercase text-[10px] tracking-widest flex items-center gap-3">🔍 Tipps</span><span className={`transition-transform ${showHints ? 'rotate-180' : ''}`}>▼</span></button>{showHints && (<div className="bg-amber-50 rounded-[1.2rem] p-4 border-2 border-amber-100 space-y-2 animate-in slide-in-from-top-4">{activeContent.hints.map((h: string, i: number) => <div key={i} className="bg-white p-3 rounded-lg text-[10px] text-slate-600 italic border border-amber-50">★ {h}</div>)}</div>)}</div>
+                   <div className="space-y-2"><button onClick={() => setShowWritingHelp(!showWritingHelp)} className="w-full bg-emerald-600 text-white rounded-[1.2rem] p-4 flex justify-between items-center hover:bg-emerald-700 shadow-lg border-b-4 border-emerald-900"><span className="font-black uppercase text-[10px] tracking-widest flex items-center gap-3">💡 Schreibhilfe</span><span className={`transition-transform ${showWritingHelp ? 'rotate-180' : ''}`}>▼</span></button>{showWritingHelp && (<div className="bg-emerald-50 rounded-[1.2rem] p-4 border-2 border-emerald-100 space-y-2 animate-in slide-in-from-top-4"><p className="text-[9px] font-black uppercase text-emerald-400 mb-2">Satzanfang anklicken:</p><div className="flex flex-wrap gap-2">{activeContent.sentenceStarters.map((s: string, i: number) => (<button key={i} onClick={() => handleAddStarter(s)} className="bg-white px-2 py-1.5 rounded-lg text-[9px] text-emerald-900 font-bold italic border border-emerald-100 hover:bg-emerald-600 hover:text-white transition-all shadow-sm">„{s}“</button>))}</div></div>)}</div>
                 </div>
                 <div className="flex justify-between items-center py-6 pb-24"><button disabled={step === 0} onClick={() => { setStep(prev => prev - 1); setShowHints(false); setShowWritingHelp(false); }} className="px-5 py-3 rounded-xl border-2 font-black uppercase text-[9px] text-slate-400 disabled:opacity-0 hover:bg-slate-100 transition-all">Zurück</button><button onClick={handleNextStep} className="px-8 py-4 bg-emerald-600 text-white rounded-xl font-black uppercase text-[9px] shadow-xl hover:bg-emerald-700 active:scale-95 border-b-4 border-emerald-900">{step < steps.length - 1 ? 'Nächster Schritt' : 'Drucken & Fertig'}</button></div>
               </>
@@ -395,7 +475,7 @@ const BildanalyseApp: React.FC<{ onBack: () => void, page: PageEntry }> = ({ onB
             
             <div className="space-y-3 pt-6">
               <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-widest border-b pb-2">Verlauf</h4>
-              {steps.map((s, idx) => {
+              {steps.map((s: any, idx: number) => {
                 if (!userNotes[idx]) return null;
                 const isActive = idx === step;
                 return (
@@ -418,7 +498,7 @@ const BildanalyseApp: React.FC<{ onBack: () => void, page: PageEntry }> = ({ onB
       {activeCheckpoint && <CheckpointOverlay checkpoint={activeCheckpoint} onSuccess={goToNext} onClose={() => setActiveCheckpoint(null)} />}
 
       <div className="hidden print:block">
-        <Infographic steps={steps as any} level={level} title={page.title} artist={page.subtitle} year={page.year.toString()} imageUrl={page.imageUrl} userNotes={userNotes} />
+        <Infographic steps={activeSteps as any} level={level} title={activeMeta.title} artist={activeMeta.subtitle} year={page.year.toString()} imageUrl={page.imageUrl} userNotes={userNotes} lang={lang} />
       </div>
     </div>
   );
@@ -426,12 +506,16 @@ const BildanalyseApp: React.FC<{ onBack: () => void, page: PageEntry }> = ({ onB
 
 const App: React.FC = () => {
   const [view, setView] = useState<string | null>(null);
+  const [lang, setLang] = useState<Language>('de');
   useEffect(() => { const h = () => setView(window.location.hash.replace('#', '') || null); window.addEventListener('hashchange', h); h(); return () => window.removeEventListener('hashchange', h); }, []);
   const active = PAGES_DATA.find(p => p.path === view);
   const sortedGallery = useMemo(() => [...PAGES_DATA].sort((a, b) => a.year - b.year), []);
-  if (view && active) return <BildanalyseApp page={active} onBack={() => window.location.hash = ''} />;
+  if (view && active) return <BildanalyseApp page={active} onBack={() => window.location.hash = ''} lang={lang} onLangChange={setLang} />;
   return (
     <div className="min-h-screen bg-slate-50 font-sans selection:bg-emerald-100 overflow-x-hidden">
+      <div className="fixed top-6 right-6 z-[200]">
+        <LanguageSelector current={lang} onChange={setLang} />
+      </div>
       <header className="py-20 md:py-32 px-6 text-center relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-600/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-sky-600/10 rounded-full translate-y-1/2 -translate-x-1/2"></div>
