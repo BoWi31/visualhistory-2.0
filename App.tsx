@@ -78,16 +78,16 @@ const PAGES_DATA: PageEntry[] = [
   },
   {
     "id": "epstein-trump-1997",
-    "title": "Trump und Epstein",
+    "title": "Epstein & Trump in Mar-a-Lago",
     "subtitle": "Davidoff Studios / Getty Images • 1997",
     "description": "Jeffrey Epstein und Donald Trump zusammen in Mar-a-Lago (Palm Beach, Florida), 1997.",
     "path": "bildanalyse/epstein-trump-1997",
     "imageUrl": "epstein-trump-1997.jpg",
     "year": 1997,
-    "tags": ["Quellenkritik", "Medienwirkung", "Netzwerke", "Framing", "Pressefoto"],
-    "focusTag": "QUELLENKRITIK",
-    "difficulty": 3,
-    "shortText": "Mar-a-Lago 1997: Ein Foto als Beweis für Nähe? Prüfe die Quelle kritisch."
+    "tags": ["MEDIEN", "MACHT", "NETZWERKE"],
+    "focusTag": "MEDIEN & MACHT",
+    "difficulty": 2,
+    "shortText": "Ein Pressefoto von 1997. Was beweist ein gemeinsames Foto wirklich?"
   }
 ];
 
@@ -252,26 +252,18 @@ const BildanalyseApp: React.FC<{ onBack: () => void, page: PageEntry }> = ({ onB
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 1024);
   const [activeCheckpoint, setActiveCheckpoint] = useState<FreiheitData.Checkpoint | null>(null);
   const [userNotes, setUserNotes] = useState<Record<number, string>>({});
-  const [studentName, setStudentName] = useState('');
 
   useEffect(() => {
     const saved = localStorage.getItem(`notes_${page.id}`);
     if (saved) setUserNotes(JSON.parse(saved));
     const savedAmpel = localStorage.getItem(`ampel_${page.id}`);
     if (savedAmpel) setAmpel(savedAmpel);
-    const savedName = localStorage.getItem(`name_${page.id}`);
-    if (savedName) setStudentName(savedName);
   }, [page.id]);
 
   const updateNote = (text: string) => {
     const newNotes = { ...userNotes, [step]: text };
     setUserNotes(newNotes);
     localStorage.setItem(`notes_${page.id}`, JSON.stringify(newNotes));
-  };
-
-  const updateName = (name: string) => {
-    setStudentName(name);
-    localStorage.setItem(`name_${page.id}`, name);
   };
 
   const handleAddStarter = (starter: string) => {
@@ -294,13 +286,8 @@ const BildanalyseApp: React.FC<{ onBack: () => void, page: PageEntry }> = ({ onB
   else { steps = FreiheitData.STEPS; feedback = FreiheitData.AMPEL_FEEDBACK; }
   
   const curr = steps[step] || steps[0];
-  const originalContent = curr.content[level];
+  const activeContent = curr.content[level];
   const sensitivity = registryEntry?.sensitivity;
-
-  const activeContent = originalContent;
-  const activeMeta = { title: curr.title, subtitle: curr.subtitle };
-  const activeFeedback = feedback;
-  const activeSteps = steps;
 
   const handleNextStep = () => { if (curr.checkpoint) setActiveCheckpoint(curr.checkpoint); else goToNext(); };
   const goToNext = () => {
@@ -311,7 +298,6 @@ const BildanalyseApp: React.FC<{ onBack: () => void, page: PageEntry }> = ({ onB
       setActiveCheckpoint(null);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
-      if (!studentName.trim()) setIsSidebarOpen(true);
       window.print();
     }
   };
@@ -319,25 +305,21 @@ const BildanalyseApp: React.FC<{ onBack: () => void, page: PageEntry }> = ({ onB
   const isTrafficLightStep = steps[step]?.title === "WAHRHEITSGEHALT" || steps[step]?.title === "QUELLENKRITIK" || steps[step]?.title === "GLAUBWÜRDIGKEIT";
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col font-sans selection:bg-emerald-100 overflow-hidden ltr" dir="ltr">
+    <div className="min-h-screen bg-slate-50 flex flex-col font-sans selection:bg-emerald-100 overflow-hidden">
       <nav className="no-print bg-white/80 backdrop-blur-md border-b p-3 md:p-4 flex justify-between items-center z-50 sticky top-0 shadow-sm">
-        <div className="flex items-center gap-4 flex-row">
-          <button onClick={onBack} className="bg-slate-900 text-white px-3 md:px-5 py-2 rounded-xl font-black uppercase text-[10px] hover:bg-emerald-600 transition-all shadow-lg">
-            ← Zurück zur Übersicht
-          </button>
-        </div>
-        <div className="flex gap-1 md:gap-2 flex-row">
-          {steps.map((_: any, i: number) => (
+        <button onClick={onBack} className="bg-slate-900 text-white px-3 md:px-5 py-2 rounded-xl font-black uppercase text-[10px] hover:bg-emerald-600 transition-all shadow-lg">← Galerie</button>
+        <div className="flex gap-1 md:gap-2">
+          {steps.map((_, i) => (
             <button key={i} onClick={() => { setStep(i); setShowHints(false); setShowWritingHelp(false); }} className={`w-7 h-7 md:w-11 md:h-11 rounded-xl font-black text-xs transition-all ${step === i ? 'bg-emerald-600 text-white shadow-xl scale-110' : 'bg-slate-100 text-slate-400 hover:bg-slate-200'}`}>{i + 1}</button>
           ))}
         </div>
-        <button onClick={() => { if (!studentName.trim()) setIsSidebarOpen(true); window.print(); }} className="bg-slate-100 text-slate-900 p-2.5 rounded-xl hover:bg-emerald-50"><svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg></button>
+        <button onClick={() => window.print()} className="bg-slate-100 text-slate-900 p-2.5 rounded-xl hover:bg-emerald-50"><svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg></button>
       </nav>
 
       <div className="flex flex-1 overflow-hidden relative">
         <main className="no-print flex-1 overflow-y-auto p-4 md:p-10 transition-all duration-500">
           <div className="max-w-3xl mx-auto space-y-4 md:space-y-6">
-            <div className="flex justify-center"><div className="bg-slate-200/50 p-1.5 rounded-2xl flex gap-1">{['level_easy', 'level_medium', 'level_hard'].map((l) => (<button key={l} onClick={() => setLevel(l as any)} className={`px-3 md:px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${level === l ? 'bg-white shadow-md text-emerald-600' : 'text-slate-500 hover:text-slate-700'}`}>{l === 'level_easy' ? "Einfach" : l === 'level_medium' ? "Mittel" : "Profi"}</button>))}</div></div>
+            <div className="flex justify-center"><div className="bg-slate-200/50 p-1.5 rounded-2xl flex gap-1">{['level_easy', 'level_medium', 'level_hard'].map((l) => (<button key={l} onClick={() => setLevel(l as any)} className={`px-3 md:px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${level === l ? 'bg-white shadow-md text-emerald-600' : 'text-slate-500 hover:text-slate-700'}`}>{l === 'level_easy' ? 'Easy' : l === 'level_medium' ? 'Normal' : 'Pro'}</button>))}</div></div>
             
             {/* Bild-Header: Das reale Bild wird nun klein aber klar angezeigt */}
             <div className="bg-slate-900 rounded-[2rem] p-4 md:p-6 text-center relative overflow-hidden h-44 md:h-64 flex flex-col justify-center border-b-4 border-slate-950 shadow-2xl group">
@@ -366,9 +348,9 @@ const BildanalyseApp: React.FC<{ onBack: () => void, page: PageEntry }> = ({ onB
                 </div>
 
                 <div className="text-center md:text-left space-y-2">
-                  <span className="bg-emerald-600 text-[8px] font-black tracking-widest uppercase px-4 py-1.5 rounded-full text-white">Schritt {step + 1} von {steps.length}</span>
-                  <h2 className="text-lg md:text-2xl font-black text-white uppercase tracking-tighter leading-none">{activeMeta.title}</h2>
-                  <p className="text-emerald-400 font-black uppercase text-[10px] md:text-sm italic tracking-widest opacity-80">{activeMeta.subtitle}</p>
+                  <span className="bg-emerald-600 text-[8px] font-black tracking-widest uppercase px-4 py-1.5 rounded-full text-white">SCHRITT {step + 1} VON {steps.length}</span>
+                  <h2 className="text-xl md:text-3xl font-black text-white uppercase tracking-tighter leading-none">{curr.title}</h2>
+                  <p className="text-emerald-400 font-black uppercase text-[10px] md:text-sm italic tracking-widest opacity-80">{curr.subtitle}</p>
                 </div>
               </div>
             </div>
@@ -376,15 +358,15 @@ const BildanalyseApp: React.FC<{ onBack: () => void, page: PageEntry }> = ({ onB
             {sensitivity && sensitivity.classroomOption.defaultPreview === 'blurred' && !isRevealed ? (
               <div className="bg-white rounded-[2rem] p-6 md:p-16 border-2 border-slate-100 text-center space-y-8 shadow-2xl mt-4 animate-in zoom-in-95">
                 <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto text-3xl">⚠️</div>
-                <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Sensitiver Inhalt</h3>
+                <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">{isChe ? "Politisch aufgeladen" : "Sensitiver Inhalt"}</h3>
                 <p className="text-slate-500 font-medium italic">{sensitivity.warning}</p>
-                <button onClick={() => setIsRevealed(true)} className="w-full bg-emerald-600 text-white py-5 rounded-2xl font-black uppercase shadow-xl hover:bg-emerald-700">Inhalt zeigen</button>
+                <button onClick={() => setIsRevealed(true)} className="w-full bg-emerald-600 text-white py-5 rounded-2xl font-black uppercase shadow-xl hover:bg-emerald-700">{sensitivity.classroomOption.revealButtonText}</button>
               </div>
             ) : (
               <>
                 <p className="text-base md:text-xl font-black text-slate-800 text-center leading-snug px-4">{activeContent.description}</p>
                 {activeContent.contextText && (<div className="p-5 md:p-6 bg-sky-900 text-sky-100 rounded-[1.5rem] shadow-xl border-l-8 border-emerald-500 italic"><InteractiveText text={activeContent.contextText} className="text-sm md:text-base italic leading-relaxed" /></div>)}
-                <div className="grid gap-3">{activeContent.points.map((p: string, i: number) => (<div key={i} className="flex gap-4 items-start bg-white p-4 md:p-6 rounded-[1.2rem] border border-slate-100 hover:border-emerald-200 transition-all shadow-sm group"><span className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-slate-50 border-2 border-slate-100 flex items-center justify-center font-black text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-all text-xs">{i + 1}</span><InteractiveText text={p} className="text-sm md:text-lg font-bold text-slate-700 leading-tight pt-1" /></div>))}</div>
+                <div className="grid gap-3">{activeContent.points.map((p, i) => (<div key={i} className="flex gap-4 items-start bg-white p-4 md:p-6 rounded-[1.2rem] border border-slate-100 hover:border-emerald-200 transition-all shadow-sm group"><span className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-slate-50 border-2 border-slate-100 flex items-center justify-center font-black text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-all text-xs">{i + 1}</span><InteractiveText text={p} className="text-sm md:text-lg font-bold text-slate-700 leading-tight pt-1" /></div>))}</div>
 
                 {/* Ampel Interaktion */}
                 {isTrafficLightStep && (
@@ -397,21 +379,21 @@ const BildanalyseApp: React.FC<{ onBack: () => void, page: PageEntry }> = ({ onB
                      </div>
                      {ampel && (
                         <div className={`mt-8 p-4 bg-slate-800 rounded-xl font-bold text-xs md:text-sm text-slate-300 italic animate-in zoom-in-95 duration-300 ${
-                          (activeFeedback as any)[ampel].includes('RICHTIG') || (activeFeedback as any)[ampel].includes('CORRECT') || (activeFeedback as any)[ampel].includes('SAKTË') || (activeFeedback as any)[ampel].includes('ПРАВИЛЬНО') ? 'border-green-500 text-green-100' :
-                          (activeFeedback as any)[ampel].includes('TEILWEISE') || (activeFeedback as any)[ampel].includes('PARTIALLY') || (activeFeedback as any)[ampel].includes('PJESËRISHT') || (activeFeedback as any)[ampel].includes('ЧАСТИЧНО') ? 'border-yellow-500 text-yellow-100' :
+                          (feedback as any)[ampel].includes('RICHTIG') ? 'border-green-500 text-green-100' :
+                          (feedback as any)[ampel].includes('TEILWEISE') ? 'border-yellow-500 text-yellow-100' :
                           'border-red-500 text-red-100'
                         }`}>
-                          { (activeFeedback as any)[ampel] }
+                          { (feedback as any)[ampel] }
                         </div>
                       )}
                   </div>
                 )}
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                   <div className="space-y-2"><button onClick={() => setShowHints(!showHints)} className="w-full bg-slate-900 text-white rounded-[1.2rem] p-4 flex justify-between items-center hover:bg-slate-800 shadow-lg border-b-4 border-black"><span className="font-black uppercase text-[10px] tracking-widest flex items-center gap-3">🔍 Tipps</span><span className={`transition-transform ${showHints ? 'rotate-180' : ''}`}>▼</span></button>{showHints && (<div className="bg-amber-50 rounded-[1.2rem] p-4 border-2 border-amber-100 space-y-2 animate-in slide-in-from-top-4">{activeContent.hints.map((h: string, i: number) => <div key={i} className="bg-white p-3 rounded-lg text-[10px] text-slate-600 italic border border-amber-50">★ {h}</div>)}</div>)}</div>
-                   <div className="space-y-2"><button onClick={() => setShowWritingHelp(!showWritingHelp)} className="w-full bg-emerald-600 text-white rounded-[1.2rem] p-4 flex justify-between items-center hover:bg-emerald-700 shadow-lg border-b-4 border-emerald-900"><span className="font-black uppercase text-[10px] tracking-widest flex items-center gap-3">💡 Schreibhilfe</span><span className={`transition-transform ${showWritingHelp ? 'rotate-180' : ''}`}>▼</span></button>{showWritingHelp && (<div className="bg-emerald-50 rounded-[1.2rem] p-4 border-2 border-emerald-100 space-y-2 animate-in slide-in-from-top-4"><p className="text-[9px] font-black uppercase text-emerald-400 mb-2">Satzanfang anklicken:</p><div className="flex flex-wrap gap-2">{activeContent.sentenceStarters.map((s: string, i: number) => (<button key={i} onClick={() => handleAddStarter(s)} className="bg-white px-2 py-1.5 rounded-lg text-[9px] text-emerald-900 font-bold italic border border-emerald-100 hover:bg-emerald-600 hover:text-white transition-all shadow-sm">„{s}“</button>))}</div></div>)}</div>
+                   <div className="space-y-2"><button onClick={() => setShowHints(!showHints)} className="w-full bg-slate-900 text-white rounded-[1.2rem] p-4 flex justify-between items-center hover:bg-slate-800 shadow-lg border-b-4 border-black"><span className="font-black uppercase text-[10px] tracking-widest flex items-center gap-3">🔍 Tipps</span><span className={`transition-transform ${showHints ? 'rotate-180' : ''}`}>▼</span></button>{showHints && (<div className="bg-amber-50 rounded-[1.2rem] p-4 border-2 border-amber-100 space-y-2 animate-in slide-in-from-top-4">{activeContent.hints.map((h, i) => <div key={i} className="bg-white p-3 rounded-lg text-[10px] text-slate-600 italic border border-amber-50">★ {h}</div>)}</div>)}</div>
+                   <div className="space-y-2"><button onClick={() => setShowWritingHelp(!showWritingHelp)} className="w-full bg-emerald-600 text-white rounded-[1.2rem] p-4 flex justify-between items-center hover:bg-emerald-700 shadow-lg border-b-4 border-emerald-900"><span className="font-black uppercase text-[10px] tracking-widest flex items-center gap-3">💡 Schreibhilfe</span><span className={`transition-transform ${showWritingHelp ? 'rotate-180' : ''}`}>▼</span></button>{showWritingHelp && (<div className="bg-emerald-50 rounded-[1.2rem] p-4 border-2 border-emerald-100 space-y-2 animate-in slide-in-from-top-4"><p className="text-[9px] font-black uppercase text-emerald-400 mb-2">Satzanfang anklicken:</p><div className="flex flex-wrap gap-2">{activeContent.sentenceStarters.map((s, i) => (<button key={i} onClick={() => handleAddStarter(s)} className="bg-white px-2 py-1.5 rounded-lg text-[9px] text-emerald-900 font-bold italic border border-emerald-100 hover:bg-emerald-600 hover:text-white transition-all shadow-sm">„{s}“</button>))}</div></div>)}</div>
                 </div>
-                <div className="flex justify-between items-center py-6 pb-24"><button disabled={step === 0} onClick={() => { setStep(prev => prev - 1); setShowHints(false); setShowWritingHelp(false); }} className="px-5 py-3 rounded-xl border-2 font-black uppercase text-[9px] text-slate-400 disabled:opacity-0 hover:bg-slate-100 transition-all">Zurück</button><button onClick={handleNextStep} className="px-8 py-4 bg-emerald-600 text-white rounded-xl font-black uppercase text-[9px] shadow-xl hover:bg-emerald-700 active:scale-95 border-b-4 border-emerald-900">{step < steps.length - 1 ? "Nächster Schritt" : "Drucken & Fertig"}</button></div>
+                <div className="flex justify-between items-center py-6 pb-24"><button disabled={step === 0} onClick={() => { setStep(prev => prev - 1); setShowHints(false); setShowWritingHelp(false); }} className="px-5 py-3 rounded-xl border-2 font-black uppercase text-[9px] text-slate-400 disabled:opacity-0 hover:bg-slate-100 transition-all">Zurück</button><button onClick={handleNextStep} className="px-8 py-4 bg-emerald-600 text-white rounded-xl font-black uppercase text-[9px] shadow-xl hover:bg-emerald-700 active:scale-95 border-b-4 border-emerald-900">{step < steps.length - 1 ? 'Nächster Schritt' : 'Drucken & Fertig'}</button></div>
               </>
             )}
           </div>
@@ -422,23 +404,11 @@ const BildanalyseApp: React.FC<{ onBack: () => void, page: PageEntry }> = ({ onB
         {/* Sidebar mit sehr hohem Z-Index, um über dem Zoom-Modal zu bleiben */}
         <aside className={`fixed inset-y-0 right-0 md:static bg-white border-l shadow-2xl transition-all duration-500 z-[250] flex flex-col h-full ${isSidebarOpen ? 'w-full md:w-[400px]' : 'w-0 translate-x-full opacity-0 pointer-events-none'}`}>
           <div className="p-4 border-b flex justify-between items-center bg-slate-50/50"><h3 className="font-black uppercase text-[10px] tracking-widest text-slate-900 flex items-center gap-3"><span className="bg-slate-900 text-white p-2 rounded-lg text-sm">📝</span> Notizen • Schritt {step+1}</h3><button onClick={() => setIsSidebarOpen(false)} className="text-slate-400 hover:text-slate-900 p-2 text-2xl">✕</button></div>
-          
-          <div className="px-4 pt-4 no-print">
-            <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1 block">Dein Name</label>
-            <input 
-              type="text" 
-              value={studentName} 
-              onChange={(e) => updateName(e.target.value)}
-              placeholder="Vorname Nachname"
-              className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-3 text-sm font-bold focus:border-emerald-500 focus:ring-0 transition-all"
-            />
-          </div>
-
-          <div className="flex-1 overflow-y-auto p-4 space-y-6"><div className="bg-yellow-50 rounded-[1.5rem] p-5 border-2 border-yellow-100 shadow-inner flex flex-col min-h-[300px]"><textarea value={userNotes[step] || ""} onChange={(e) => updateNote(e.target.value)} placeholder="Erkenntnisse hier festhalten..." className="w-full flex-grow bg-transparent border-none focus:ring-0 text-slate-800 font-bold text-base md:text-lg resize-none placeholder:text-yellow-600/30 leading-relaxed custom-scrollbar" style={{ backgroundImage: 'linear-gradient(transparent, transparent 31px, #e5e7eb 31px)', backgroundSize: '100% 32px', lineHeight: '32px' }} /></div>
+          <div className="flex-1 overflow-y-auto p-4 space-y-6"><div className="bg-yellow-50 rounded-[1.5rem] p-5 border-2 border-yellow-100 shadow-inner flex flex-col min-h-[300px]"><textarea value={userNotes[step] || ""} onChange={(e) => updateNote(e.target.value)} placeholder={`Erkenntnisse hier festhalten...`} className="w-full flex-grow bg-transparent border-none focus:ring-0 text-slate-800 font-bold text-base md:text-lg resize-none placeholder:text-yellow-600/30 leading-relaxed custom-scrollbar" style={{ backgroundImage: 'linear-gradient(transparent, transparent 31px, #e5e7eb 31px)', backgroundSize: '100% 32px', lineHeight: '32px' }} /></div>
             
             <div className="space-y-3 pt-6">
               <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-widest border-b pb-2">Verlauf</h4>
-              {steps.map((s: any, idx: number) => {
+              {steps.map((s, idx) => {
                 if (!userNotes[idx]) return null;
                 const isActive = idx === step;
                 return (
@@ -453,7 +423,7 @@ const BildanalyseApp: React.FC<{ onBack: () => void, page: PageEntry }> = ({ onB
               })}
             </div>
           </div>
-          <div className="p-4 border-t bg-slate-50/50"><button onClick={() => { if (!studentName.trim()) setIsSidebarOpen(true); window.print(); }} className="w-full bg-slate-900 text-white py-3 rounded-xl font-black uppercase text-[9px] tracking-widest hover:bg-emerald-600 shadow-xl">Drucken</button></div>
+          <div className="p-4 border-t bg-slate-50/50"><button onClick={() => window.print()} className="w-full bg-slate-900 text-white py-3 rounded-xl font-black uppercase text-[9px] tracking-widest hover:bg-emerald-600 shadow-xl">Protokoll drucken</button></div>
         </aside>
       </div>
 
@@ -461,7 +431,7 @@ const BildanalyseApp: React.FC<{ onBack: () => void, page: PageEntry }> = ({ onB
       {activeCheckpoint && <CheckpointOverlay checkpoint={activeCheckpoint} onSuccess={goToNext} onClose={() => setActiveCheckpoint(null)} />}
 
       <div className="hidden print:block">
-        <Infographic steps={activeSteps as any} level={level} title={activeMeta.title} artist={activeMeta.subtitle} year={page.year.toString()} imageUrl={page.imageUrl} userNotes={userNotes} studentName={studentName} />
+        <Infographic steps={steps as any} level={level} title={page.title} artist={page.subtitle} year={page.year.toString()} imageUrl={page.imageUrl} userNotes={userNotes} />
       </div>
     </div>
   );
@@ -469,102 +439,56 @@ const BildanalyseApp: React.FC<{ onBack: () => void, page: PageEntry }> = ({ onB
 
 const App: React.FC = () => {
   const [view, setView] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-
   useEffect(() => { const h = () => setView(window.location.hash.replace('#', '') || null); window.addEventListener('hashchange', h); h(); return () => window.removeEventListener('hashchange', h); }, []);
   const active = PAGES_DATA.find(p => p.path === view);
-  const filteredPages = useMemo(() => {
-    if (!searchQuery.trim()) return PAGES_DATA;
-    const q = searchQuery.toLowerCase();
-    return PAGES_DATA.filter(p => 
-      p.title.toLowerCase().includes(q) || 
-      p.description.toLowerCase().includes(q) ||
-      p.shortText.toLowerCase().includes(q)
-    );
-  }, [searchQuery]);
-
-  const sortedGallery = useMemo(() => [...filteredPages].sort((a, b) => a.year - b.year), [filteredPages]);
-
+  const sortedGallery = useMemo(() => [...PAGES_DATA].sort((a, b) => a.year - b.year), []);
   if (view && active) return <BildanalyseApp page={active} onBack={() => window.location.hash = ''} />;
   return (
-    <div className="min-h-screen bg-slate-50 font-sans selection:bg-emerald-100 overflow-x-hidden ltr" dir="ltr">
+    <div className="min-h-screen bg-slate-50 font-sans selection:bg-emerald-100 overflow-x-hidden">
       <header className="py-20 md:py-32 px-6 text-center relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-600/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-sky-600/10 rounded-full translate-y-1/2 -translate-x-1/2"></div>
-        <h1 className="text-5xl md:text-[6rem] font-black italic uppercase tracking-tighter leading-none mb-6 text-slate-900 animate-in slide-in-from-top-10 duration-1000 relative z-10">Visual History</h1>
+        <h1 className="text-6xl md:text-[10rem] font-black italic uppercase tracking-tighter leading-none mb-6 text-slate-900 animate-in slide-in-from-top-10 duration-1000 relative z-10">Visual History</h1>
         <div className="w-24 md:w-32 h-3 bg-emerald-600 mx-auto rounded-full mb-8 relative z-10"></div>
-        <p className="text-slate-900 font-black uppercase tracking-[0.4em] text-[12px] md:text-lg mb-2 relative z-10">Visual History Dashboard</p>
-        <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-[10px] md:text-xs opacity-60">Zentrale Navigationsseite für Bildanalyse-Lerneinheiten.</p>
-        
-        <div className="max-w-xl mx-auto mt-12 relative z-10 px-4">
-          <div className="relative group">
-            <input 
-              type="text" 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Suchen..."
-              className="w-full bg-white/80 backdrop-blur-xl border-2 border-slate-100 rounded-2xl py-4 px-6 pl-14 text-slate-900 font-bold placeholder:text-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all shadow-xl"
-            />
-            <div className="absolute left-5 top-1/2 -translate-y-1/2 text-2xl grayscale opacity-40 group-focus-within:grayscale-0 group-focus-within:opacity-100 transition-all">🔍</div>
-            {searchQuery && (
-              <button 
-                onClick={() => setSearchQuery('')}
-                className="absolute right-5 top-1/2 -translate-y-1/2 w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 hover:bg-slate-200 hover:text-slate-900 transition-all"
-              >✕</button>
-            )}
-          </div>
-        </div>
+        <p className="text-slate-900 font-black uppercase tracking-[0.4em] text-[12px] md:text-lg mb-2 relative z-10">Bildanalyse an der BoWi</p>
+        <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-[10px] md:text-xs opacity-60">Interaktives Dossier für den Geschichtsunterricht</p>
       </header>
       <main className="max-w-7xl mx-auto p-4 md:p-12 space-y-24 mb-32">
         <Timeline pages={PAGES_DATA} onNavigate={(p) => window.location.hash = p} />
-        
-        {sortedGallery.length === 0 ? (
-          <div className="text-center py-32 space-y-6 animate-in fade-in zoom-in-95">
-            <div className="text-8xl grayscale opacity-20">🏜️</div>
-            <h3 className="text-3xl font-black text-slate-300 uppercase tracking-widest">Keine Ergebnisse gefunden.</h3>
-            <button 
-              onClick={() => setSearchQuery('')}
-              className="text-emerald-600 font-black uppercase tracking-widest text-xs hover:underline"
-            >
-              Suche zurücksetzen
-            </button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 md:gap-14">
-            {sortedGallery.map((p, idx) => {
-              const isBlurred = CONTENT_REGISTRY[p.id]?.sensitivity?.classroomOption.defaultPreview === 'blurred';
-              return (
-                <div key={p.id} onClick={() => window.location.hash = p.path} className="group cursor-pointer space-y-8 animate-in fade-in slide-in-from-bottom-10" style={{ animationDelay: `${idx * 150}ms` }}>
-                  <div className="aspect-[4/5] rounded-[2.5rem] overflow-hidden border-2 border-white p-2.5 bg-white shadow-2xl group-hover:shadow-[0_20px_60px_-15px_rgba(5,150,105,0.3)] transition-all duration-500 group-hover:-translate-y-4 relative">
-                    <div className="w-full h-full relative overflow-hidden rounded-[2rem]">
-                      <img 
-                        src={assetUrl(p.imageUrl)} 
-                        className={`w-full h-full object-cover grayscale-0 md:grayscale group-hover:grayscale-0 transition-all duration-1000 opacity-95 group-hover:scale-110 ${isBlurred ? 'blur-2xl' : ''}`} 
-                        alt={p.title} 
-                        onError={() => {
-                          console.warn("Bild lädt nicht (Gallery):", assetUrl(p.imageUrl));
-                        }}
-                      />
-                      {isBlurred && (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/20 backdrop-blur-sm pointer-events-none group-hover:opacity-0 transition-opacity duration-500">
-                           <div className="bg-white/90 text-slate-900 px-4 py-2 rounded-full font-black text-[10px] uppercase tracking-widest shadow-2xl flex items-center gap-2"><span>⚠️</span> Sensitiver Inhalt</div>
-                        </div>
-                      )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/20 to-transparent opacity-0 md:group-hover:opacity-100 transition-opacity flex items-end p-8">
-                        <span className="text-white font-black uppercase text-[10px] tracking-widest bg-emerald-600 px-6 py-3 rounded-full shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">Starten</span>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 md:gap-14">
+          {sortedGallery.map((p, idx) => {
+            const isBlurred = CONTENT_REGISTRY[p.id]?.sensitivity?.classroomOption.defaultPreview === 'blurred';
+            return (
+              <div key={p.id} onClick={() => window.location.hash = p.path} className="group cursor-pointer space-y-8 animate-in fade-in slide-in-from-bottom-10" style={{ animationDelay: `${idx * 150}ms` }}>
+                <div className="aspect-[4/5] rounded-[2.5rem] overflow-hidden border-2 border-white p-2.5 bg-white shadow-2xl group-hover:shadow-[0_20px_60px_-15px_rgba(5,150,105,0.3)] transition-all duration-500 group-hover:-translate-y-4 relative">
+                  <div className="w-full h-full relative overflow-hidden rounded-[2rem]">
+                    <img 
+                      src={assetUrl(p.imageUrl)} 
+                      className={`w-full h-full object-cover grayscale-0 md:grayscale group-hover:grayscale-0 transition-all duration-1000 opacity-95 group-hover:scale-110 ${isBlurred ? 'blur-2xl' : ''}`} 
+                      alt={p.title} 
+                      onError={() => {
+                        console.warn("Bild lädt nicht (Gallery):", assetUrl(p.imageUrl));
+                      }}
+                    />
+                    {isBlurred && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/20 backdrop-blur-sm pointer-events-none group-hover:opacity-0 transition-opacity duration-500">
+                         <div className="bg-white/90 text-slate-900 px-4 py-2 rounded-full font-black text-[10px] uppercase tracking-widest shadow-2xl flex items-center gap-2"><span>⚠️</span> Sensitiver Inhalt</div>
                       </div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/20 to-transparent opacity-0 md:group-hover:opacity-100 transition-opacity flex items-end p-8">
+                      <span className="text-white font-black uppercase text-[10px] tracking-widest bg-emerald-600 px-6 py-3 rounded-full shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">Analyse starten</span>
                     </div>
                   </div>
-                  <div className="px-4 text-center">
-                    <div className="flex justify-center mb-4"><span className="text-[10px] font-black bg-emerald-50 px-5 py-2 rounded-full uppercase text-emerald-600 border border-emerald-100 shadow-sm">{p.year}</span></div>
-                    <h3 className="text-2xl md:text-3xl font-black uppercase tracking-tighter group-hover:text-emerald-600 transition-colors leading-tight">{p.title}</h3>
-                    <p className="text-slate-500 mt-4 italic font-medium text-sm leading-relaxed line-clamp-2 px-4 opacity-80 group-hover:opacity-100">{p.shortText}</p>
-                  </div>
                 </div>
-              );
-            })}
-          </div>
-        )}
+                <div className="px-4 text-center">
+                  <div className="flex justify-center mb-4"><span className="text-[10px] font-black bg-emerald-50 px-5 py-2 rounded-full uppercase text-emerald-600 border border-emerald-100 shadow-sm">{p.year}</span></div>
+                  <h3 className="text-2xl md:text-3xl font-black uppercase tracking-tighter group-hover:text-emerald-600 transition-colors leading-tight">{p.title}</h3>
+                  <p className="text-slate-500 mt-4 italic font-medium text-sm leading-relaxed line-clamp-2 px-4 opacity-80 group-hover:opacity-100">{p.shortText}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </main>
       <footer className="py-24 border-t border-slate-100 text-center bg-white">
         <div className="max-w-7xl mx-auto px-6 flex flex-col items-center gap-8">
