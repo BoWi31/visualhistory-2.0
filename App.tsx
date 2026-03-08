@@ -5,7 +5,6 @@ import * as NapoleonData from './bildanalyse/napoleon';
 import * as CheData from './bildanalyse/che';
 import { CONTENT_REGISTRY } from './analysisContent';
 import { Infographic } from './bildanalyse/components/Infographic';
-import { Language, LANGUAGES, translateObject, getStaticTranslation } from './services/translationService';
 
 // BoWi Design-Konstanten
 const BOWI_GREEN = "emerald-600";
@@ -242,36 +241,7 @@ const ZoomModal: React.FC<{ imageUrl: string, onClose: () => void }> = ({ imageU
   );
 };
 
-const LanguageSelector: React.FC<{ current: Language, onChange: (l: Language) => void }> = ({ current, onChange }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  return (
-    <div className="relative no-print">
-      <button 
-        onClick={() => setIsOpen(!isOpen)} 
-        className="flex items-center gap-2 bg-white/90 backdrop-blur-md border border-slate-200 px-3 py-2 rounded-xl shadow-sm hover:bg-slate-50 transition-all font-bold text-xs"
-      >
-        <span>{LANGUAGES[current].flag}</span>
-        <span className="hidden md:block">{LANGUAGES[current].label}</span>
-      </button>
-      {isOpen && (
-        <div className="absolute right-0 mt-2 w-40 bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden z-[500] animate-in fade-in slide-in-from-top-2">
-          {(Object.keys(LANGUAGES) as Language[]).map((lang) => (
-            <button 
-              key={lang} 
-              onClick={() => { onChange(lang); setIsOpen(false); }}
-              className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-slate-50 transition-colors text-xs font-bold ${current === lang ? 'text-emerald-600 bg-emerald-50/50' : 'text-slate-600'}`}
-            >
-              <span>{LANGUAGES[lang].flag}</span>
-              <span>{LANGUAGES[lang].label}</span>
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
-
-const BildanalyseApp: React.FC<{ onBack: () => void, page: PageEntry, lang: Language, onLangChange: (l: Language) => void }> = ({ onBack, page, lang, onLangChange }) => {
+const BildanalyseApp: React.FC<{ onBack: () => void, page: PageEntry }> = ({ onBack, page }) => {
   const [step, setStep] = useState(0);
   const [level, setLevel] = useState<'level_easy' | 'level_medium' | 'level_hard'>('level_medium');
   const [ampel, setAmpel] = useState<null | string>(null);
@@ -283,11 +253,6 @@ const BildanalyseApp: React.FC<{ onBack: () => void, page: PageEntry, lang: Lang
   const [activeCheckpoint, setActiveCheckpoint] = useState<FreiheitData.Checkpoint | null>(null);
   const [userNotes, setUserNotes] = useState<Record<number, string>>({});
   const [studentName, setStudentName] = useState('');
-  const [translatedContent, setTranslatedContent] = useState<any>(null);
-  const [translatedMeta, setTranslatedMeta] = useState<{ title: string, subtitle: string } | null>(null);
-  const [translatedFeedback, setTranslatedFeedback] = useState<any>(null);
-  const [translatedSteps, setTranslatedSteps] = useState<any[] | null>(null);
-  const [isTranslating, setIsTranslating] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem(`notes_${page.id}`);
@@ -332,43 +297,10 @@ const BildanalyseApp: React.FC<{ onBack: () => void, page: PageEntry, lang: Lang
   const originalContent = curr.content[level];
   const sensitivity = registryEntry?.sensitivity;
 
-  useEffect(() => {
-    if (lang === 'de') {
-      setTranslatedContent(null);
-      setTranslatedMeta(null);
-      setTranslatedFeedback(null);
-      setTranslatedSteps(null);
-      return;
-    }
-
-    const performTranslation = async () => {
-      setIsTranslating(true);
-      const [tContent, tMeta, tFeedback, tSteps] = await Promise.all([
-        translateObject(originalContent, lang),
-        translateObject({ title: curr.title, subtitle: curr.subtitle }, lang),
-        translateObject(feedback, lang),
-        translateObject(steps.map(s => ({ title: s.title, subtitle: s.subtitle })), lang)
-      ]);
-      setTranslatedContent(tContent);
-      setTranslatedMeta(tMeta);
-      setTranslatedFeedback(tFeedback);
-      
-      if (tSteps) {
-        const mergedSteps = steps.map((s, i) => ({ ...s, title: tSteps[i].title, subtitle: tSteps[i].subtitle }));
-        setTranslatedSteps(mergedSteps);
-      }
-      
-      setIsTranslating(false);
-    };
-
-    performTranslation();
-  }, [lang, step, level, originalContent, curr.title, curr.subtitle, feedback, steps]);
-
-  const activeContent = translatedContent || originalContent;
-  const activeMeta = translatedMeta || { title: curr.title, subtitle: curr.subtitle };
-  const activeFeedback = translatedFeedback || feedback;
-  const activeSteps = translatedSteps || steps;
-  const isRtl = LANGUAGES[lang]?.dir === 'rtl';
+  const activeContent = originalContent;
+  const activeMeta = { title: curr.title, subtitle: curr.subtitle };
+  const activeFeedback = feedback;
+  const activeSteps = steps;
 
   const handleNextStep = () => { if (curr.checkpoint) setActiveCheckpoint(curr.checkpoint); else goToNext(); };
   const goToNext = () => {
@@ -387,15 +319,14 @@ const BildanalyseApp: React.FC<{ onBack: () => void, page: PageEntry, lang: Lang
   const isTrafficLightStep = steps[step]?.title === "WAHRHEITSGEHALT" || steps[step]?.title === "QUELLENKRITIK" || steps[step]?.title === "GLAUBWÜRDIGKEIT";
 
   return (
-    <div className={`min-h-screen bg-slate-50 flex flex-col font-sans selection:bg-emerald-100 overflow-hidden ${isRtl ? 'rtl' : 'ltr'}`} dir={isRtl ? 'rtl' : 'ltr'}>
+    <div className="min-h-screen bg-slate-50 flex flex-col font-sans selection:bg-emerald-100 overflow-hidden ltr" dir="ltr">
       <nav className="no-print bg-white/80 backdrop-blur-md border-b p-3 md:p-4 flex justify-between items-center z-50 sticky top-0 shadow-sm">
-        <div className={`flex items-center gap-4 ${isRtl ? 'flex-row-reverse' : 'flex-row'}`}>
+        <div className="flex items-center gap-4 flex-row">
           <button onClick={onBack} className="bg-slate-900 text-white px-3 md:px-5 py-2 rounded-xl font-black uppercase text-[10px] hover:bg-emerald-600 transition-all shadow-lg">
-            {isRtl ? '←' : '←'} {getStaticTranslation('back', lang)}
+            ← Zurück zur Übersicht
           </button>
-          <LanguageSelector current={lang} onChange={onLangChange} />
         </div>
-        <div className={`flex gap-1 md:gap-2 ${isRtl ? 'flex-row-reverse' : 'flex-row'}`}>
+        <div className="flex gap-1 md:gap-2 flex-row">
           {steps.map((_: any, i: number) => (
             <button key={i} onClick={() => { setStep(i); setShowHints(false); setShowWritingHelp(false); }} className={`w-7 h-7 md:w-11 md:h-11 rounded-xl font-black text-xs transition-all ${step === i ? 'bg-emerald-600 text-white shadow-xl scale-110' : 'bg-slate-100 text-slate-400 hover:bg-slate-200'}`}>{i + 1}</button>
           ))}
@@ -406,12 +337,7 @@ const BildanalyseApp: React.FC<{ onBack: () => void, page: PageEntry, lang: Lang
       <div className="flex flex-1 overflow-hidden relative">
         <main className="no-print flex-1 overflow-y-auto p-4 md:p-10 transition-all duration-500">
           <div className="max-w-3xl mx-auto space-y-4 md:space-y-6">
-            {isTranslating && (
-              <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[100] bg-emerald-600 text-white px-6 py-2 rounded-full shadow-2xl font-black uppercase text-[10px] tracking-widest flex items-center gap-3 animate-bounce">
-                <span className="animate-spin">⏳</span> {getStaticTranslation('translating', lang)}
-              </div>
-            )}
-            <div className="flex justify-center"><div className="bg-slate-200/50 p-1.5 rounded-2xl flex gap-1">{['level_easy', 'level_medium', 'level_hard'].map((l) => (<button key={l} onClick={() => setLevel(l as any)} className={`px-3 md:px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${level === l ? 'bg-white shadow-md text-emerald-600' : 'text-slate-500 hover:text-slate-700'}`}>{l === 'level_easy' ? getStaticTranslation('easy', lang) : l === 'level_medium' ? getStaticTranslation('medium', lang) : getStaticTranslation('hard', lang)}</button>))}</div></div>
+            <div className="flex justify-center"><div className="bg-slate-200/50 p-1.5 rounded-2xl flex gap-1">{['level_easy', 'level_medium', 'level_hard'].map((l) => (<button key={l} onClick={() => setLevel(l as any)} className={`px-3 md:px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all ${level === l ? 'bg-white shadow-md text-emerald-600' : 'text-slate-500 hover:text-slate-700'}`}>{l === 'level_easy' ? "Einfach" : l === 'level_medium' ? "Mittel" : "Profi"}</button>))}</div></div>
             
             {/* Bild-Header: Das reale Bild wird nun klein aber klar angezeigt */}
             <div className="bg-slate-900 rounded-[2rem] p-4 md:p-6 text-center relative overflow-hidden h-44 md:h-64 flex flex-col justify-center border-b-4 border-slate-950 shadow-2xl group">
@@ -440,7 +366,7 @@ const BildanalyseApp: React.FC<{ onBack: () => void, page: PageEntry, lang: Lang
                 </div>
 
                 <div className="text-center md:text-left space-y-2">
-                  <span className="bg-emerald-600 text-[8px] font-black tracking-widest uppercase px-4 py-1.5 rounded-full text-white">{getStaticTranslation('step', lang)} {step + 1} {getStaticTranslation('of', lang)} {steps.length}</span>
+                  <span className="bg-emerald-600 text-[8px] font-black tracking-widest uppercase px-4 py-1.5 rounded-full text-white">Schritt {step + 1} von {steps.length}</span>
                   <h2 className="text-lg md:text-2xl font-black text-white uppercase tracking-tighter leading-none">{activeMeta.title}</h2>
                   <p className="text-emerald-400 font-black uppercase text-[10px] md:text-sm italic tracking-widest opacity-80">{activeMeta.subtitle}</p>
                 </div>
@@ -450,9 +376,9 @@ const BildanalyseApp: React.FC<{ onBack: () => void, page: PageEntry, lang: Lang
             {sensitivity && sensitivity.classroomOption.defaultPreview === 'blurred' && !isRevealed ? (
               <div className="bg-white rounded-[2rem] p-6 md:p-16 border-2 border-slate-100 text-center space-y-8 shadow-2xl mt-4 animate-in zoom-in-95">
                 <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto text-3xl">⚠️</div>
-                <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">{isChe ? getStaticTranslation('politicallyCharged', lang) : getStaticTranslation('sensitiveContent', lang)}</h3>
+                <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Sensitiver Inhalt</h3>
                 <p className="text-slate-500 font-medium italic">{sensitivity.warning}</p>
-                <button onClick={() => setIsRevealed(true)} className="w-full bg-emerald-600 text-white py-5 rounded-2xl font-black uppercase shadow-xl hover:bg-emerald-700">{getStaticTranslation('revealContent', lang)}</button>
+                <button onClick={() => setIsRevealed(true)} className="w-full bg-emerald-600 text-white py-5 rounded-2xl font-black uppercase shadow-xl hover:bg-emerald-700">Inhalt zeigen</button>
               </div>
             ) : (
               <>
@@ -463,7 +389,7 @@ const BildanalyseApp: React.FC<{ onBack: () => void, page: PageEntry, lang: Lang
                 {/* Ampel Interaktion */}
                 {isTrafficLightStep && (
                   <div className="bg-slate-900 rounded-[2.5rem] p-6 md:p-10 text-center border-b-8 border-slate-950 shadow-2xl space-y-8">
-                     <h4 className="text-white font-black uppercase text-[10px] tracking-widest opacity-60 italic">{getStaticTranslation('credibilityAssessment', lang)}</h4>
+                     <h4 className="text-white font-black uppercase text-[10px] tracking-widest opacity-60 italic">Glaubwürdigkeits-Bewertung</h4>
                      <div className="flex justify-center gap-6 md:gap-10">
                         {['red', 'yellow', 'green'].map((color) => (
                           <button key={color} onClick={() => setAmpel(color)} className={`w-12 h-12 md:w-20 md:h-20 rounded-full border-[4px] md:border-[6px] transition-all active:scale-75 ${color === 'red' ? 'bg-red-600' : color === 'yellow' ? 'bg-yellow-400' : 'bg-green-500'} ${ampel === color ? 'border-white scale-125 shadow-[0_0_30px_rgba(255,255,255,0.3)]' : 'border-black/30 opacity-30 grayscale'}`} />
@@ -482,36 +408,36 @@ const BildanalyseApp: React.FC<{ onBack: () => void, page: PageEntry, lang: Lang
                 )}
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                   <div className="space-y-2"><button onClick={() => setShowHints(!showHints)} className="w-full bg-slate-900 text-white rounded-[1.2rem] p-4 flex justify-between items-center hover:bg-slate-800 shadow-lg border-b-4 border-black"><span className="font-black uppercase text-[10px] tracking-widest flex items-center gap-3">🔍 {getStaticTranslation('hints', lang)}</span><span className={`transition-transform ${showHints ? 'rotate-180' : ''}`}>▼</span></button>{showHints && (<div className="bg-amber-50 rounded-[1.2rem] p-4 border-2 border-amber-100 space-y-2 animate-in slide-in-from-top-4">{activeContent.hints.map((h: string, i: number) => <div key={i} className="bg-white p-3 rounded-lg text-[10px] text-slate-600 italic border border-amber-50">★ {h}</div>)}</div>)}</div>
-                   <div className="space-y-2"><button onClick={() => setShowWritingHelp(!showWritingHelp)} className="w-full bg-emerald-600 text-white rounded-[1.2rem] p-4 flex justify-between items-center hover:bg-emerald-700 shadow-lg border-b-4 border-emerald-900"><span className="font-black uppercase text-[10px] tracking-widest flex items-center gap-3">💡 {getStaticTranslation('writingHelp', lang)}</span><span className={`transition-transform ${showWritingHelp ? 'rotate-180' : ''}`}>▼</span></button>{showWritingHelp && (<div className="bg-emerald-50 rounded-[1.2rem] p-4 border-2 border-emerald-100 space-y-2 animate-in slide-in-from-top-4"><p className="text-[9px] font-black uppercase text-emerald-400 mb-2">{getStaticTranslation('clickSentenceStarter', lang)}</p><div className="flex flex-wrap gap-2">{activeContent.sentenceStarters.map((s: string, i: number) => (<button key={i} onClick={() => handleAddStarter(s)} className="bg-white px-2 py-1.5 rounded-lg text-[9px] text-emerald-900 font-bold italic border border-emerald-100 hover:bg-emerald-600 hover:text-white transition-all shadow-sm">„{s}“</button>))}</div></div>)}</div>
+                   <div className="space-y-2"><button onClick={() => setShowHints(!showHints)} className="w-full bg-slate-900 text-white rounded-[1.2rem] p-4 flex justify-between items-center hover:bg-slate-800 shadow-lg border-b-4 border-black"><span className="font-black uppercase text-[10px] tracking-widest flex items-center gap-3">🔍 Tipps</span><span className={`transition-transform ${showHints ? 'rotate-180' : ''}`}>▼</span></button>{showHints && (<div className="bg-amber-50 rounded-[1.2rem] p-4 border-2 border-amber-100 space-y-2 animate-in slide-in-from-top-4">{activeContent.hints.map((h: string, i: number) => <div key={i} className="bg-white p-3 rounded-lg text-[10px] text-slate-600 italic border border-amber-50">★ {h}</div>)}</div>)}</div>
+                   <div className="space-y-2"><button onClick={() => setShowWritingHelp(!showWritingHelp)} className="w-full bg-emerald-600 text-white rounded-[1.2rem] p-4 flex justify-between items-center hover:bg-emerald-700 shadow-lg border-b-4 border-emerald-900"><span className="font-black uppercase text-[10px] tracking-widest flex items-center gap-3">💡 Schreibhilfe</span><span className={`transition-transform ${showWritingHelp ? 'rotate-180' : ''}`}>▼</span></button>{showWritingHelp && (<div className="bg-emerald-50 rounded-[1.2rem] p-4 border-2 border-emerald-100 space-y-2 animate-in slide-in-from-top-4"><p className="text-[9px] font-black uppercase text-emerald-400 mb-2">Satzanfang anklicken:</p><div className="flex flex-wrap gap-2">{activeContent.sentenceStarters.map((s: string, i: number) => (<button key={i} onClick={() => handleAddStarter(s)} className="bg-white px-2 py-1.5 rounded-lg text-[9px] text-emerald-900 font-bold italic border border-emerald-100 hover:bg-emerald-600 hover:text-white transition-all shadow-sm">„{s}“</button>))}</div></div>)}</div>
                 </div>
-                <div className="flex justify-between items-center py-6 pb-24"><button disabled={step === 0} onClick={() => { setStep(prev => prev - 1); setShowHints(false); setShowWritingHelp(false); }} className="px-5 py-3 rounded-xl border-2 font-black uppercase text-[9px] text-slate-400 disabled:opacity-0 hover:bg-slate-100 transition-all">{getStaticTranslation('back', lang)}</button><button onClick={handleNextStep} className="px-8 py-4 bg-emerald-600 text-white rounded-xl font-black uppercase text-[9px] shadow-xl hover:bg-emerald-700 active:scale-95 border-b-4 border-emerald-900">{step < steps.length - 1 ? getStaticTranslation('nextStep', lang) : getStaticTranslation('finishAndPrint', lang)}</button></div>
+                <div className="flex justify-between items-center py-6 pb-24"><button disabled={step === 0} onClick={() => { setStep(prev => prev - 1); setShowHints(false); setShowWritingHelp(false); }} className="px-5 py-3 rounded-xl border-2 font-black uppercase text-[9px] text-slate-400 disabled:opacity-0 hover:bg-slate-100 transition-all">Zurück</button><button onClick={handleNextStep} className="px-8 py-4 bg-emerald-600 text-white rounded-xl font-black uppercase text-[9px] shadow-xl hover:bg-emerald-700 active:scale-95 border-b-4 border-emerald-900">{step < steps.length - 1 ? "Nächster Schritt" : "Drucken & Fertig"}</button></div>
               </>
             )}
           </div>
         </main>
 
-        <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className={`no-print fixed bottom-6 right-6 md:static z-[200] bg-slate-900 text-white w-14 h-14 md:w-10 md:h-auto md:py-8 md:px-1 rounded-full md:rounded-l-2xl shadow-2xl transition-all duration-300 hover:bg-emerald-600 flex flex-col items-center justify-center gap-4 ${isSidebarOpen ? 'md:translate-x-full opacity-0' : ''}`}><span className="text-xl">📝</span><span className="hidden md:block [writing-mode:vertical-lr] font-black uppercase text-[10px] tracking-widest rotate-180">{getStaticTranslation('notesSidebar', lang)}</span></button>
+        <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className={`no-print fixed bottom-6 right-6 md:static z-[200] bg-slate-900 text-white w-14 h-14 md:w-10 md:h-auto md:py-8 md:px-1 rounded-full md:rounded-l-2xl shadow-2xl transition-all duration-300 hover:bg-emerald-600 flex flex-col items-center justify-center gap-4 ${isSidebarOpen ? 'md:translate-x-full opacity-0' : ''}`}><span className="text-xl">📝</span><span className="hidden md:block [writing-mode:vertical-lr] font-black uppercase text-[10px] tracking-widest rotate-180">Notizen</span></button>
         
         {/* Sidebar mit sehr hohem Z-Index, um über dem Zoom-Modal zu bleiben */}
         <aside className={`fixed inset-y-0 right-0 md:static bg-white border-l shadow-2xl transition-all duration-500 z-[250] flex flex-col h-full ${isSidebarOpen ? 'w-full md:w-[400px]' : 'w-0 translate-x-full opacity-0 pointer-events-none'}`}>
-          <div className="p-4 border-b flex justify-between items-center bg-slate-50/50"><h3 className="font-black uppercase text-[10px] tracking-widest text-slate-900 flex items-center gap-3"><span className="bg-slate-900 text-white p-2 rounded-lg text-sm">📝</span> {getStaticTranslation('notesSidebar', lang)} • {getStaticTranslation('step', lang)} {step+1}</h3><button onClick={() => setIsSidebarOpen(false)} className="text-slate-400 hover:text-slate-900 p-2 text-2xl">✕</button></div>
+          <div className="p-4 border-b flex justify-between items-center bg-slate-50/50"><h3 className="font-black uppercase text-[10px] tracking-widest text-slate-900 flex items-center gap-3"><span className="bg-slate-900 text-white p-2 rounded-lg text-sm">📝</span> Notizen • Schritt {step+1}</h3><button onClick={() => setIsSidebarOpen(false)} className="text-slate-400 hover:text-slate-900 p-2 text-2xl">✕</button></div>
           
           <div className="px-4 pt-4 no-print">
-            <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1 block">{getStaticTranslation('nameLabel', lang)}</label>
+            <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1 block">Dein Name</label>
             <input 
               type="text" 
               value={studentName} 
               onChange={(e) => updateName(e.target.value)}
-              placeholder={getStaticTranslation('namePlaceholder', lang)}
+              placeholder="Vorname Nachname"
               className="w-full bg-slate-50 border-2 border-slate-100 rounded-xl px-4 py-3 text-sm font-bold focus:border-emerald-500 focus:ring-0 transition-all"
             />
           </div>
 
-          <div className="flex-1 overflow-y-auto p-4 space-y-6"><div className="bg-yellow-50 rounded-[1.5rem] p-5 border-2 border-yellow-100 shadow-inner flex flex-col min-h-[300px]"><textarea value={userNotes[step] || ""} onChange={(e) => updateNote(e.target.value)} placeholder={getStaticTranslation('placeholderNotes', lang)} className="w-full flex-grow bg-transparent border-none focus:ring-0 text-slate-800 font-bold text-base md:text-lg resize-none placeholder:text-yellow-600/30 leading-relaxed custom-scrollbar" style={{ backgroundImage: 'linear-gradient(transparent, transparent 31px, #e5e7eb 31px)', backgroundSize: '100% 32px', lineHeight: '32px' }} /></div>
+          <div className="flex-1 overflow-y-auto p-4 space-y-6"><div className="bg-yellow-50 rounded-[1.5rem] p-5 border-2 border-yellow-100 shadow-inner flex flex-col min-h-[300px]"><textarea value={userNotes[step] || ""} onChange={(e) => updateNote(e.target.value)} placeholder="Erkenntnisse hier festhalten..." className="w-full flex-grow bg-transparent border-none focus:ring-0 text-slate-800 font-bold text-base md:text-lg resize-none placeholder:text-yellow-600/30 leading-relaxed custom-scrollbar" style={{ backgroundImage: 'linear-gradient(transparent, transparent 31px, #e5e7eb 31px)', backgroundSize: '100% 32px', lineHeight: '32px' }} /></div>
             
             <div className="space-y-3 pt-6">
-              <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-widest border-b pb-2">{getStaticTranslation('history', lang)}</h4>
+              <h4 className="text-[10px] font-black uppercase text-slate-400 tracking-widest border-b pb-2">Verlauf</h4>
               {steps.map((s: any, idx: number) => {
                 if (!userNotes[idx]) return null;
                 const isActive = idx === step;
@@ -519,7 +445,7 @@ const BildanalyseApp: React.FC<{ onBack: () => void, page: PageEntry, lang: Lang
                   <div key={idx} className={`p-3 rounded-xl border transition-all cursor-pointer ${isActive ? "bg-emerald-50 border-emerald-200" : "bg-white border-slate-100 opacity-60"}`} onClick={() => setStep(idx)}>
                     <div className="flex justify-between items-center mb-1">
                       <p className="text-[8px] font-black uppercase text-slate-400">{s.title}</p>
-                      <span className="text-[8px] font-black text-emerald-400">{getStaticTranslation('step', lang).toUpperCase()} {idx + 1}</span>
+                      <span className="text-[8px] font-black text-emerald-400">SCHRITT {idx + 1}</span>
                     </div>
                     <p className="text-[10px] italic text-slate-600 line-clamp-2">{userNotes[idx]}</p>
                   </div>
@@ -527,7 +453,7 @@ const BildanalyseApp: React.FC<{ onBack: () => void, page: PageEntry, lang: Lang
               })}
             </div>
           </div>
-          <div className="p-4 border-t bg-slate-50/50"><button onClick={() => { if (!studentName.trim()) setIsSidebarOpen(true); window.print(); }} className="w-full bg-slate-900 text-white py-3 rounded-xl font-black uppercase text-[9px] tracking-widest hover:bg-emerald-600 shadow-xl">{getStaticTranslation('print', lang)}</button></div>
+          <div className="p-4 border-t bg-slate-50/50"><button onClick={() => { if (!studentName.trim()) setIsSidebarOpen(true); window.print(); }} className="w-full bg-slate-900 text-white py-3 rounded-xl font-black uppercase text-[9px] tracking-widest hover:bg-emerald-600 shadow-xl">Drucken</button></div>
         </aside>
       </div>
 
@@ -535,7 +461,7 @@ const BildanalyseApp: React.FC<{ onBack: () => void, page: PageEntry, lang: Lang
       {activeCheckpoint && <CheckpointOverlay checkpoint={activeCheckpoint} onSuccess={goToNext} onClose={() => setActiveCheckpoint(null)} />}
 
       <div className="hidden print:block">
-        <Infographic steps={activeSteps as any} level={level} title={activeMeta.title} artist={activeMeta.subtitle} year={page.year.toString()} imageUrl={page.imageUrl} userNotes={userNotes} lang={lang} studentName={studentName} />
+        <Infographic steps={activeSteps as any} level={level} title={activeMeta.title} artist={activeMeta.subtitle} year={page.year.toString()} imageUrl={page.imageUrl} userNotes={userNotes} studentName={studentName} />
       </div>
     </div>
   );
@@ -543,50 +469,32 @@ const BildanalyseApp: React.FC<{ onBack: () => void, page: PageEntry, lang: Lang
 
 const App: React.FC = () => {
   const [view, setView] = useState<string | null>(null);
-  const [lang, setLang] = useState<Language>('de');
-  const [translatedPages, setTranslatedPages] = useState<PageEntry[]>(PAGES_DATA);
   const [searchQuery, setSearchQuery] = useState('');
 
-  useEffect(() => {
-    const translatePages = async () => {
-      if (lang === 'de') {
-        setTranslatedPages(PAGES_DATA);
-        return;
-      }
-      const translated = await translateObject(PAGES_DATA, lang);
-      setTranslatedPages(translated);
-    };
-    translatePages();
-  }, [lang]);
-
   useEffect(() => { const h = () => setView(window.location.hash.replace('#', '') || null); window.addEventListener('hashchange', h); h(); return () => window.removeEventListener('hashchange', h); }, []);
-  const active = translatedPages.find(p => p.path === view);
+  const active = PAGES_DATA.find(p => p.path === view);
   const filteredPages = useMemo(() => {
-    if (!searchQuery.trim()) return translatedPages;
+    if (!searchQuery.trim()) return PAGES_DATA;
     const q = searchQuery.toLowerCase();
-    return translatedPages.filter(p => 
+    return PAGES_DATA.filter(p => 
       p.title.toLowerCase().includes(q) || 
       p.description.toLowerCase().includes(q) ||
       p.shortText.toLowerCase().includes(q)
     );
-  }, [translatedPages, searchQuery]);
+  }, [searchQuery]);
 
   const sortedGallery = useMemo(() => [...filteredPages].sort((a, b) => a.year - b.year), [filteredPages]);
-  const isRtl = LANGUAGES[lang]?.dir === 'rtl';
 
-  if (view && active) return <BildanalyseApp page={active} onBack={() => window.location.hash = ''} lang={lang} onLangChange={setLang} />;
+  if (view && active) return <BildanalyseApp page={active} onBack={() => window.location.hash = ''} />;
   return (
-    <div className={`min-h-screen bg-slate-50 font-sans selection:bg-emerald-100 overflow-x-hidden ${isRtl ? 'rtl' : 'ltr'}`} dir={isRtl ? 'rtl' : 'ltr'}>
-      <div className={`fixed top-6 ${isRtl ? 'left-6' : 'right-6'} z-[200]`}>
-        <LanguageSelector current={lang} onChange={setLang} />
-      </div>
+    <div className="min-h-screen bg-slate-50 font-sans selection:bg-emerald-100 overflow-x-hidden ltr" dir="ltr">
       <header className="py-20 md:py-32 px-6 text-center relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-600/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-sky-600/10 rounded-full translate-y-1/2 -translate-x-1/2"></div>
         <h1 className="text-5xl md:text-[6rem] font-black italic uppercase tracking-tighter leading-none mb-6 text-slate-900 animate-in slide-in-from-top-10 duration-1000 relative z-10">Visual History</h1>
         <div className="w-24 md:w-32 h-3 bg-emerald-600 mx-auto rounded-full mb-8 relative z-10"></div>
-        <p className="text-slate-900 font-black uppercase tracking-[0.4em] text-[12px] md:text-lg mb-2 relative z-10">{getStaticTranslation('dashboardTitle', lang)}</p>
-        <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-[10px] md:text-xs opacity-60">{getStaticTranslation('dashboardSubtitle', lang)}</p>
+        <p className="text-slate-900 font-black uppercase tracking-[0.4em] text-[12px] md:text-lg mb-2 relative z-10">Visual History Dashboard</p>
+        <p className="text-slate-400 font-bold uppercase tracking-[0.2em] text-[10px] md:text-xs opacity-60">Zentrale Navigationsseite für Bildanalyse-Lerneinheiten.</p>
         
         <div className="max-w-xl mx-auto mt-12 relative z-10 px-4">
           <div className="relative group">
@@ -594,7 +502,7 @@ const App: React.FC = () => {
               type="text" 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={getStaticTranslation('search', lang)}
+              placeholder="Suchen..."
               className="w-full bg-white/80 backdrop-blur-xl border-2 border-slate-100 rounded-2xl py-4 px-6 pl-14 text-slate-900 font-bold placeholder:text-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all shadow-xl"
             />
             <div className="absolute left-5 top-1/2 -translate-y-1/2 text-2xl grayscale opacity-40 group-focus-within:grayscale-0 group-focus-within:opacity-100 transition-all">🔍</div>
@@ -608,17 +516,17 @@ const App: React.FC = () => {
         </div>
       </header>
       <main className="max-w-7xl mx-auto p-4 md:p-12 space-y-24 mb-32">
-        <Timeline pages={translatedPages} onNavigate={(p) => window.location.hash = p} />
+        <Timeline pages={PAGES_DATA} onNavigate={(p) => window.location.hash = p} />
         
         {sortedGallery.length === 0 ? (
           <div className="text-center py-32 space-y-6 animate-in fade-in zoom-in-95">
             <div className="text-8xl grayscale opacity-20">🏜️</div>
-            <h3 className="text-3xl font-black text-slate-300 uppercase tracking-widest">{getStaticTranslation('noResults', lang)}</h3>
+            <h3 className="text-3xl font-black text-slate-300 uppercase tracking-widest">Keine Ergebnisse gefunden.</h3>
             <button 
               onClick={() => setSearchQuery('')}
               className="text-emerald-600 font-black uppercase tracking-widest text-xs hover:underline"
             >
-              {getStaticTranslation('resetSearch', lang)}
+              Suche zurücksetzen
             </button>
           </div>
         ) : (
@@ -639,11 +547,11 @@ const App: React.FC = () => {
                       />
                       {isBlurred && (
                         <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/20 backdrop-blur-sm pointer-events-none group-hover:opacity-0 transition-opacity duration-500">
-                           <div className="bg-white/90 text-slate-900 px-4 py-2 rounded-full font-black text-[10px] uppercase tracking-widest shadow-2xl flex items-center gap-2"><span>⚠️</span> {getStaticTranslation('sensitiveContent', lang)}</div>
+                           <div className="bg-white/90 text-slate-900 px-4 py-2 rounded-full font-black text-[10px] uppercase tracking-widest shadow-2xl flex items-center gap-2"><span>⚠️</span> Sensitiver Inhalt</div>
                         </div>
                       )}
                       <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/20 to-transparent opacity-0 md:group-hover:opacity-100 transition-opacity flex items-end p-8">
-                        <span className="text-white font-black uppercase text-[10px] tracking-widest bg-emerald-600 px-6 py-3 rounded-full shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">{getStaticTranslation('start', lang)}</span>
+                        <span className="text-white font-black uppercase text-[10px] tracking-widest bg-emerald-600 px-6 py-3 rounded-full shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">Starten</span>
                       </div>
                     </div>
                   </div>
@@ -661,7 +569,7 @@ const App: React.FC = () => {
       <footer className="py-24 border-t border-slate-100 text-center bg-white">
         <div className="max-w-7xl mx-auto px-6 flex flex-col items-center gap-8">
           <div className="w-16 h-16 bg-slate-900 rounded-full flex items-center justify-center text-white font-black text-xl">B</div>
-          <p className="text-[10px] font-black uppercase tracking-[0.6em] text-slate-300">&copy; {new Date().getFullYear()} • {lang === 'de' ? 'Bodenstedt- / Wilhelmschule Peine' : 'Bodenstedt / Wilhelm School Peine'} • VISUAL HISTORY v2.5</p>
+          <p className="text-[10px] font-black uppercase tracking-[0.6em] text-slate-300">&copy; {new Date().getFullYear()} • Bodenstedt- / Wilhelmschule Peine • VISUAL HISTORY v2.5</p>
         </div>
       </footer>
     </div>
