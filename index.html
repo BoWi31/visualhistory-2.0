@@ -1,12 +1,39 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="de">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Visual History - Dashboard</title>
-</head>
-<body>
+
+    <!-- Font (optional) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Tailwind CDN (nur solange du kein Tailwind Build-Setup hast) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Kleine globale Styles -->
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+        background-color: #f8fafc;
+      }
+      @media print {
+        .no-print {
+          display: none !important;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
     <div id="root"></div>
+
+    <!-- Vite Entry: index.tsx liegt bei dir im Repo-Root -->
     <script type="module" src="/index.tsx"></script>
-</body>
+  </body>
 </html>
