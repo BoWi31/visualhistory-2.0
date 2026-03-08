@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { PageEntry, assetUrl } from './types';
-import * as FreiheitData from './bildanalyse/freiheitfuehrtvolk';
-import * as NapoleonData from './bildanalyse/napoleon';
-import * as CheData from './bildanalyse/che';
+import * as FreiheitData from './freiheitfuehrtvolk';
+import * as NapoleonData from './napoleon';
+import * as CheData from './che';
 import { CONTENT_REGISTRY } from './analysisContent';
-import { Infographic } from './bildanalyse/components/Infographic';
+import { Infographic } from './components/Infographic';
 
 // BoWi Design-Konstanten
 const BOWI_GREEN = "emerald-600";
